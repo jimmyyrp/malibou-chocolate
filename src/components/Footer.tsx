@@ -154,13 +154,21 @@ export const Footer: React.FC = () => {
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-[#EAE2D5]/60 gap-4">
           <p>© 2026 Malibou Chocolate. All Rights Reserved. Padang Pariaman, Sumatera Barat.</p>
           
-          <button
-            onClick={scrollToTop}
-            className="flex items-center gap-1.5 text-[#C58B47] hover:text-white transition-colors"
-          >
-            <span>Kembali ke Atas</span>
-            <ArrowUp className="w-3.5 h-3.5" />
-          </button>
+          <div className="flex items-center gap-5">
+            <Link
+              href="/admin"
+              className="text-[#EAE2D5]/50 hover:text-[#C58B47] transition-colors"
+            >
+              Area Admin
+            </Link>
+            <button
+              onClick={scrollToTop}
+              className="flex items-center gap-1.5 text-[#C58B47] hover:text-white transition-colors"
+            >
+              <span>Kembali ke Atas</span>
+              <ArrowUp className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
 
       </div>

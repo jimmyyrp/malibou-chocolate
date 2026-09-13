@@ -68,3 +68,33 @@ h1, h2, h3, .font-serif-luxury {
   from { opacity: 0; transform: translateY(16px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* Entry animation (setara tailwindcss-animate untuk Tailwind v4) */
+.animate-in {
+  animation-timing-function: ease-out;
+  animation-fill-mode: both;
+}
+.fade-in {
+  animation-name: enter-fade-in;
+  animation-duration: 200ms;
+}
+.slide-in-from-right {
+  animation-name: enter-slide-x;
+  animation-duration: 300ms;
+}
+.slide-in-from-bottom-3 {
+  animation-name: enter-slide-y;
+  animation-duration: 200ms;
+}
+@keyframes enter-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes enter-slide-x {
+  from { opacity: 0; transform: translateX(100%); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes enter-slide-y {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}

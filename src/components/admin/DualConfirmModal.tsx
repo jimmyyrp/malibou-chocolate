@@ -61,7 +61,6 @@ export const DualConfirmModal: React.FC<DualConfirmModalProps> = ({
       <div
         className="absolute inset-0 bg-[#1C0D06]/60 backdrop-blur-[2px]"
         onClick={onCancel}
-        aria-hidden="true"
       />
       <div className="relative w-full max-w-md bg-[#FAF7F2] rounded-2xl shadow-2xl border border-[#2A140B]/10 overflow-hidden animate-[admin-pop-in_0.2s_ease-out]">
         <button

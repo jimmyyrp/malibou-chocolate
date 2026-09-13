@@ -164,7 +164,6 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount, onOpenCart }) => {
                   {cartCount > 0 && (
                     <span
                       className="absolute -top-1 -right-1 min-w-[19px] h-[19px] px-1 flex items-center justify-center bg-[#B87932] text-white text-[10px] font-bold rounded-full border-2 border-[#FAF7F2]"
-                      aria-hidden="true"
                     >
                       {cartCount}
                     </span>

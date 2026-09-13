@@ -224,7 +224,6 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       <div
         className="absolute inset-0 bg-[#1C0D06]/60 backdrop-blur-[2px]"
         onClick={onClose}
-        aria-hidden="true"
       />
       <div className="relative w-full sm:max-w-lg max-h-[92vh] sm:max-h-[90vh] bg-[#FAF7F2] rounded-t-2xl sm:rounded-2xl shadow-2xl border border-[#2A140B]/10 flex flex-col overflow-hidden animate-[admin-pop-in_0.2s_ease-out]">
         {/* Header */}

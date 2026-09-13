@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import { ArrowRight, Plus } from 'lucide-react';
 import { Product } from '../types';
 import { formatRupiah } from '../data/products';
@@ -20,9 +21,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       className="group relative flex flex-col rounded-2xl bg-white border border-[#2A140B]/8 overflow-hidden shadow-[0_4px_16px_rgba(42,20,11,0.03)] hover:shadow-[0_8px_24px_rgba(42,20,11,0.07)] hover:border-[#B87932]/30 transition-all duration-300 text-left"
     >
       {/* Product Image Stage */}
-      <div
-        onClick={() => onSelect(product)}
-        className="relative aspect-square w-full bg-[#F3ECE2] overflow-hidden cursor-pointer"
+      <Link
+        href={`/produk/${product.id}`}
+        aria-label={`Lihat detail ${product.name}`}
+        className="relative aspect-square w-full bg-[#F3ECE2] overflow-hidden cursor-pointer block"
       >
         <img
           src={product.imageUrl}
@@ -39,7 +41,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             </span>
           </div>
         )}
-      </div>
+      </Link>
 
       {/* Product Information */}
       <div className="flex flex-col flex-1 p-3.5 sm:p-4">
@@ -49,13 +51,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         </span>
 
         {/* Title */}
-        <h4
-          onClick={() => onSelect(product)}
-          className="font-serif font-bold text-sm sm:text-base text-[#2A140B] group-hover:text-[#5E3622] cursor-pointer transition-colors line-clamp-1 mb-1"
+        <Link
+          href={`/produk/${product.id}`}
           title={product.name}
+          className="font-serif font-bold text-sm sm:text-base text-[#2A140B] group-hover:text-[#5E3622] cursor-pointer transition-colors line-clamp-1 mb-1 block"
         >
           {product.name}
-        </h4>
+        </Link>
 
         {/* Brief teaser */}
         <p className="text-xs text-[#5E3622]/80 line-clamp-1 mb-3">

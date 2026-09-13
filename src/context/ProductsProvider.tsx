@@ -6,6 +6,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import { Product, ProductCategory } from '../types';
@@ -32,7 +33,7 @@ const ProductsContext = createContext<ProductsContextValue | null>(null);
 interface ProductRow {
   id: number;
   name: string;
-  category_id: string;
+  category_id: number | string;
   price: number;
   unit: string | null;
   weight: string | null;
@@ -42,16 +43,58 @@ interface ProductRow {
   sort_order: number | null;
 }
 
+interface CategoryRow {
+  id: number | string;
+  slug: string;
+  name: string;
+}
+
+interface CategoryMaps {
+  slugById: Record<number, string>;
+  idBySlug: Record<string, number>;
+}
+
 const CATEGORY_NAMES: Record<string, string> = Object.fromEntries(
   CATEGORIES.map((c) => [c.id, c.name])
 );
 
-function rowToProduct(row: ProductRow): Product {
+// Kunci fallback jika tabel kategori tidak bisa dimuat: karena categories.id
+// urutannya selalu mengikuti sort_order (baru) atau sama dengan slug (lama),
+// pemetaan ini kompatibel dengan skema sebelum maupun sesudah migrasi 0008.
+const DEFAULT_CATEGORY_MAPS: CategoryMaps = {
+  slugById: Object.fromEntries(
+    CATEGORIES.map((c, index) => [index + 1, c.id])
+  ),
+  idBySlug: Object.fromEntries(
+    CATEGORIES.map((c, index) => [c.id, index + 1])
+  ),
+};
+
+function categoryIdToSlug(rid: number | string, maps: CategoryMaps): ProductCategory {
+  if (typeof rid === 'number') {
+    const slug = maps.slugById[rid] ?? DEFAULT_CATEGORY_MAPS.slugById[rid];
+    return (slug ?? String(rid)) as ProductCategory;
+  }
+  if (CATEGORY_NAMES[rid]) return rid as ProductCategory;
+  const slug = maps.slugById[rid as unknown as number] ?? rid;
+  return slug as ProductCategory;
+}
+
+function categorySlugToId(slug: string, maps: CategoryMaps): number | string {
+  const id =
+    maps.idBySlug[slug] ??
+    DEFAULT_CATEGORY_MAPS.idBySlug[slug] ??
+    (CATEGORY_NAMES[slug] ? slug : 1);
+  return id;
+}
+
+function rowToProduct(row: ProductRow, maps: CategoryMaps): Product {
+  const category = categoryIdToSlug(row.category_id, maps);
   return {
     id: row.id,
     name: row.name,
-    category: row.category_id as ProductCategory,
-    categoryName: CATEGORY_NAMES[row.category_id] ?? row.category_id,
+    category,
+    categoryName: CATEGORY_NAMES[category] ?? category,
     price: row.price,
     unit: row.unit ?? undefined,
     weight: row.weight ?? undefined,
@@ -61,11 +104,11 @@ function rowToProduct(row: ProductRow): Product {
   };
 }
 
-function productToRow(p: Product) {
+function productToRow(p: Product, maps: CategoryMaps) {
   return {
     id: p.id,
     name: p.name,
-    category_id: p.category,
+    category_id: categorySlugToId(p.category, maps),
     price: p.price,
     unit: p.unit ?? null,
     weight: p.weight ?? null,
@@ -78,6 +121,7 @@ function productToRow(p: Product) {
 export function ProductsProvider({ children }: { children: React.ReactNode }) {
   const [products, setProducts] = useState<Product[]>(PRODUCTS);
   const [loaded, setLoaded] = useState(false);
+  const catMapsRef = useRef(DEFAULT_CATEGORY_MAPS);
 
   // Muat katalog dari Supabase pada saat mount. Jika Supabase belum
   // dikonfigurasi / gagal, aplikasi tetap berjalan memakai katalog bawaan.
@@ -89,13 +133,35 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
     }
     const load = async () => {
       try {
-        const { data, error } = await supabasePublic
-          .from('products')
-          .select('*')
-          .order('sort_order', { ascending: true });
+        const [cats, prods] = await Promise.all([
+          supabasePublic
+            .from('categories')
+            .select('id, slug, name')
+            .order('sort_order', { ascending: true }),
+          supabasePublic
+            .from('products')
+            .select('*')
+            .order('sort_order', { ascending: true }),
+        ]);
         if (cancelled) return;
-        if (!error && data) {
-          setProducts(data.map((row) => rowToProduct(row as ProductRow)));
+        if (!cats.error && cats.data) {
+          const slugById: Record<number, string> = {};
+          const idBySlug: Record<string, number> = {};
+          for (const row of cats.data as CategoryRow[]) {
+            const id = Number(row.id);
+            if (Number.isFinite(id) && row.slug) {
+              slugById[id] = row.slug;
+              idBySlug[row.slug] = id;
+            }
+          }
+          catMapsRef.current = { slugById, idBySlug };
+        }
+        if (!prods.error && prods.data) {
+          setProducts(
+            prods.data.map((row) =>
+              rowToProduct(row as ProductRow, catMapsRef.current)
+            )
+          );
         }
         setLoaded(true);
       } catch (err) {
@@ -124,7 +190,10 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
       try {
         await db
           .from('products')
-          .upsert(next.map((p) => productToRow(p)), { onConflict: 'id' });
+          .upsert(
+            next.map((p) => productToRow(p, catMapsRef.current)),
+            { onConflict: 'id' }
+          );
         const { data } = await db.from('products').select('id');
         const keep = new Set(next.map((p) => p.id));
         const extras = (data ?? [])
@@ -145,7 +214,9 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
     if (!db) return;
     void (async () => {
       try {
-        const { error } = await db.from('products').insert(productToRow(product));
+        const { error } = await db
+          .from('products')
+          .insert(productToRow(product, catMapsRef.current));
         if (error)
           console.error('Gagal menambah produk ke Supabase:', error.message);
       } catch (err) {
@@ -164,7 +235,7 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
       try {
         const { error } = await db
           .from('products')
-          .update(productToRow(product))
+          .update(productToRow(product, catMapsRef.current))
           .eq('id', product.id);
         if (error)
           console.error('Gagal memperbarui produk di Supabase:', error.message);
@@ -199,9 +270,10 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
         const defaultIds = new Set(PRODUCTS.map((p) => p.id));
         await db
           .from('products')
-          .upsert([...PRODUCTS].map((p) => productToRow(p)), {
-            onConflict: 'id',
-          });
+          .upsert(
+            [...PRODUCTS].map((p) => productToRow(p, catMapsRef.current)),
+            { onConflict: 'id' }
+          );
         const { data } = await db.from('products').select('id');
         const extras = (data ?? [])
           .map((r) => (r as { id: number }).id)
