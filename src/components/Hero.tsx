@@ -20,9 +20,9 @@ export const Hero: React.FC<HeroProps> = ({ onExploreProducts, onOpenOrderModal 
           src="/hero.png"
           alt=""
           loading="eager"
-          className="absolute inset-0 w-full h-full object-cover opacity-[0.35]"
+          className="absolute inset-0 w-full h-full object-cover opacity-[0.7] saturate-110"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#FAF7F2]/90 via-[#FAF7F2]/75 to-[#FAF7F2]/30" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#FAF7F2]/85 via-[#FAF7F2]/40 to-[#FAF7F2]/5" />
       </div>
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
