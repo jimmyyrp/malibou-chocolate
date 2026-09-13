@@ -35,22 +35,6 @@ function KatalogContent() {
 
   return (
     <>
-      {/* Page Header Band */}
-      <section className="bg-[#FAF7F2] border-b border-[#2A140B]/8 pt-24 sm:pt-28 md:pt-32 pb-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-left">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#B87932] block mb-2">
-            OUR CATALOG
-          </span>
-          <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-[#2A140B] tracking-tight mb-3">
-            Katalog Produk Malibou
-          </h1>
-          <p className="text-sm sm:text-base text-[#5E3622] max-w-2xl leading-relaxed">
-            Seluruh koleksi olahan cokelat murni, bahan baku kakao Ranah Minang, dan varian
-            khusus rendang — lengkap dengan pilihan kemasan retail maupun bulk.
-          </p>
-        </div>
-      </section>
-
       <ProductCatalog
         selectedCategory={selectedCategory}
         onCategoryChange={handleCategoryChange}

@@ -69,19 +69,16 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
   }, [products, selectedCategory, searchQuery, sortBy]);
 
   return (
-    <section id="catalog" className="py-16 md:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section
+      id="catalog"
+      className="pt-24 sm:pt-28 md:pt-32 pb-16 md:pb-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+    >
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 pb-6 border-b border-[#2A140B]/8 gap-5 text-left">
         <div>
-          <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#B87932] block mb-1.5">
-            OUR PRODUCTS
-          </span>
-          <h2 className="font-serif text-3xl sm:text-4xl font-bold text-[#2A140B] tracking-tight">
-            Pilihan Produk Malibou
-          </h2>
-          <p className="text-sm sm:text-base text-[#5E3622] mt-1 max-w-xl">
-            Koleksi lengkap {products.length} produk olahan cokelat murni, bahan baku kakao Ranah Minang, dan varian spesial rendang.
-          </p>
+          <h1 className="font-serif text-3xl sm:text-4xl font-bold text-[#2A140B] tracking-tight">
+            Katalog Produk Malibou
+          </h1>
         </div>
 
         {/* Search and Sort controls */}
