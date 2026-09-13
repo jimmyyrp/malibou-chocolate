@@ -39,9 +39,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
         setError('Nama pengguna atau kata sandi salah. Silakan coba lagi.');
         setPassword('');
       }
-    } catch {
+    } catch (err) {
       setShakeKey((k) => k + 1);
-      setError('Gagal memverifikasi. Pastikan koneksi ke database aktif.');
+      setError(
+        err instanceof Error && err.message
+          ? err.message
+          : 'Gagal memverifikasi. Pastikan koneksi ke database aktif.'
+      );
     } finally {
       setLoading(false);
     }

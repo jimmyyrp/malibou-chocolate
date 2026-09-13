@@ -1,5 +1,3 @@
-import bcrypt from 'bcryptjs';
-import { isSupabaseConfigured, supabaseAdmin } from './supabase';
 import { DEFAULT_ADMIN_PASSWORD, DEFAULT_ADMIN_USERNAME } from './adminConfig';
 
 export interface AdminUser {
@@ -9,26 +7,19 @@ export interface AdminUser {
   role: string;
 }
 
-interface UserRow {
-  id: string;
-  username: string;
-  display_name: string;
-  role: string;
-  password_hash: string;
-  is_active: boolean;
-}
-
 /**
  * Verifikasi kredensial admin (username + password).
  *
- * - Jika Supabase dikonfigurasi: hash bcrypt dicek ke tabel `users`
- *   (service/secret key, tabel tidak bisa dibaca publik), akun non-aktif
- *   ditolak.
- * - Fallback (tanpa Supabase, mode demo/dev): hanya menerima kredensial
- *   DEFAULT_ADMIN_USERNAME / DEFAULT_ADMIN_PASSWORD.
+ * Login didelegasikan ke route server `/api/admin/login` supaya:
+ *   - secret key tidak dipakai di browser (lebih aman & lebih andal —
+ *     tidak tersandera CORS/jaringan browser ke Supabase),
+ *   - hash bcrypt tetap dibandingkan di sisi server,
+ *   - akun non-aktif ditolak.
+ *
+ * Fallback (tanpa server/style statis): hanya menerima kredensial default.
  *
  * Mengembalikan detail AdminUser bila valid, `null` bila kredensial salah,
- * atau melempar Error bila terjadi masalah koneksi.
+ * atau melempar Error bila terjadi masalah koneksi/verifikasi.
  */
 export async function authenticateAdmin(
   username: string,
@@ -37,7 +28,16 @@ export async function authenticateAdmin(
   const name = (username ?? '').trim().toLowerCase();
   if (!name || !password) return null;
 
-  if (!isSupabaseConfigured() || !supabaseAdmin) {
+  let res: Response;
+  try {
+    res = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: name, password }),
+      credentials: 'same-origin',
+    });
+  } catch (err) {
+    // Jaringan/server tidak terjangkau (mis. export statis tanpa backend).
     if (name === DEFAULT_ADMIN_USERNAME && password === DEFAULT_ADMIN_PASSWORD) {
       return {
         id: 'local-admin',
@@ -46,27 +46,24 @@ export async function authenticateAdmin(
         role: 'admin',
       };
     }
-    return null;
+    throw err;
   }
 
-  const { data, error } = await supabaseAdmin
-    .from('users')
-    .select('id, username, display_name, role, password_hash, is_active')
-    .eq('username', name)
-    .maybeSingle();
+  const body = await res.json().catch(() => null);
 
-  if (error) throw new Error(error.message);
+  if (res.ok && body && body.ok && body.user && typeof body.user === 'object') {
+    return {
+      id: String(body.user.id),
+      username: String(body.user.username),
+      displayName: String(body.user.displayName ?? body.user.username),
+      role: String(body.user.role ?? 'admin'),
+    } as AdminUser;
+  }
 
-  const row = data as UserRow | null;
-  if (!row || row.is_active !== true) return null;
+  if (body && typeof body.error === 'string') {
+    if (res.status === 401 || res.status === 400) return null;
+    throw new Error(body.error);
+  }
 
-  const valid = await bcrypt.compare(password, row.password_hash);
-  if (!valid) return null;
-
-  return {
-    id: row.id,
-    username: row.username,
-    displayName: row.display_name || row.username,
-    role: row.role,
-  };
+  throw new Error(`Verifikasi gagal (HTTP ${res.status}).`);
 }
