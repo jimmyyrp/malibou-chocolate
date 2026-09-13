@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -20,11 +20,11 @@ import { ProductCard } from './ProductCard';
 import { formatRupiah, OFFICIAL_WHATSAPP_NUMBER } from '../data/products';
 
 interface ProductDetailPageProps {
-  productId: number;
+  productParam: string;
 }
 
 export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
-  productId,
+  productParam,
 }) => {
   const { products, loaded } = useProducts();
   const { addToCart } = useCart();
@@ -32,7 +32,25 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
 
   const [quantity, setQuantity] = useState(1);
 
-  const product = products.find((p) => p.id === productId);
+  const rawParam = String(productParam ?? '').trim();
+  const numericId = Number(rawParam);
+  const numericValid = Number.isFinite(numericId) && numericId > 0;
+
+  // Lookup: dukung id angka (katalog baru) dan kode produk lama (PRD019 / prd019)
+  const product = useMemo(() => {
+    if (numericValid) {
+      return products.find((p) => p.id === numericId);
+    }
+    const code = rawParam.toUpperCase();
+    return products.find((p) => p.code.toUpperCase() === code);
+  }, [products, rawParam, numericValid, numericId]);
+
+  // Normalisasi URL kode lama -> URL canonical id angka
+  useEffect(() => {
+    if (product && !numericValid) {
+      router.replace(`/produk/${product.id}`);
+    }
+  }, [product, numericValid, router]);
 
   if (!loaded) {
     return (
