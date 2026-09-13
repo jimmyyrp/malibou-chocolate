@@ -1,0 +1,6 @@
+{
+  "name": "Malibou Chocolate",
+  "description": "Modern Cocoa House — Cita Rasa Kakao dari Ranah Minang. Katalog resmi olahan cokelat, bubuk kakao, cocoa butter, dan koleksi spesial rendang Malibou.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

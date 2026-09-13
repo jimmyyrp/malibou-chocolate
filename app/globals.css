@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+@theme {
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Harmonized Luxury Chocolate Palette */
+  --color-chocolate-dark: #2A140B;
+  --color-chocolate-deep: #3A1F14;
+  --color-cocoa-warm: #5E3622;
+  --color-cocoa-light: #7E4A30;
+  --color-cream-base: #FAF7F2;
+  --color-cream-surface: #F3ECE2;
+  --color-cream-card: #FFFFFF;
+  --color-gold-caramel: #B87932;
+  --color-gold-accent: #C58B47;
+  --color-gold-light: #E8BF87;
+  --color-botanical-green: #243D2F;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 6.5rem;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #FAF7F2;
+  color: #2A140B;
+  -webkit-tap-highlight-color: transparent;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, .font-serif-luxury {
+  font-family: var(--font-serif);
+  letter-spacing: -0.015em;
+}
+
+::selection {
+  background-color: #3A1F14;
+  color: #FAF7F2;
+}
+
+::-webkit-scrollbar { width: 7px; height: 7px; }
+::-webkit-scrollbar-track { background: #F3ECE2; }
+::-webkit-scrollbar-thumb { background: #B87932; border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: #5E3622; }
+
+@keyframes admin-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes admin-pop-in {
+  from { opacity: 0; transform: translateY(14px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes admin-shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+
+@keyframes admin-toast-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
