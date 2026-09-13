@@ -22,7 +22,7 @@ interface ProductsContextValue {
   save: (products: Product[]) => void;
   addProduct: (product: Product) => void;
   updateProduct: (product: Product) => void;
-  deleteProducts: (ids: string[]) => void;
+  deleteProducts: (ids: number[]) => void;
   resetToDefault: () => void;
 }
 
@@ -30,7 +30,7 @@ const ProductsContext = createContext<ProductsContextValue | null>(null);
 
 // Bentuk baris di tabel public.products (Supabase)
 interface ProductRow {
-  id: string;
+  id: number;
   code: string;
   name: string;
   category_id: string;
@@ -131,7 +131,7 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
         const { data } = await db.from('products').select('id');
         const keep = new Set(next.map((p) => p.id));
         const extras = (data ?? [])
-          .map((r) => (r as { id: string }).id)
+          .map((r) => (r as { id: number }).id)
           .filter((id) => !keep.has(id));
         if (extras.length > 0) {
           await db.from('products').delete().in('id', extras);
@@ -177,7 +177,7 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
     })();
   }, []);
 
-  const deleteProducts = useCallback((ids: string[]) => {
+  const deleteProducts = useCallback((ids: number[]) => {
     const idSet = new Set(ids);
     setProducts((prev) => prev.filter((p) => !idSet.has(p.id)));
     const db = getDb();
@@ -207,7 +207,7 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
           });
         const { data } = await db.from('products').select('id');
         const extras = (data ?? [])
-          .map((r) => (r as { id: string }).id)
+          .map((r) => (r as { id: number }).id)
           .filter((id) => !defaultIds.has(id));
         if (extras.length > 0) {
           await db.from('products').delete().in('id', extras);

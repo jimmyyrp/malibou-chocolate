@@ -18,16 +18,16 @@ export const RendangSection: React.FC<RendangSectionProps> = ({
   const [activeFilter, setActiveFilter] = useState<'all' | 'coklat' | 'klasik'>('all');
 
   const coklatCount = rendangProducts.filter(
-    (item) => item.id.includes('coklat') || item.name.toLowerCase().includes('coklat')
+    (item) => item.name.toLowerCase().includes('coklat')
   ).length;
   const klasikCount = rendangProducts.length - coklatCount;
 
   const filteredRendangs = rendangProducts.filter((item) => {
     if (activeFilter === 'coklat') {
-      return item.id.includes('coklat') || item.name.toLowerCase().includes('coklat');
+      return item.name.toLowerCase().includes('coklat');
     }
     if (activeFilter === 'klasik') {
-      return !item.id.includes('coklat') && !item.name.toLowerCase().includes('coklat');
+      return !item.name.toLowerCase().includes('coklat');
     }
     return true;
   });

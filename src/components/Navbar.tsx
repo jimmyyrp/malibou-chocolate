@@ -1,4 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   ShoppingBag,
   Menu,
@@ -12,26 +16,18 @@ import {
 } from 'lucide-react';
 import { MalibouLogo } from './MalibouLogo';
 import { MobileNavDrawer, NavItem } from './MobileNavDrawer';
-import { ProductCategory } from '../types';
 import { OFFICIAL_WHATSAPP_NUMBER } from '../data/products';
 
 interface NavbarProps {
   cartCount: number;
   onOpenCart: () => void;
-  onNavigate: (sectionId: string) => void;
-  activeSection: string;
-  onSelectCategory?: (category: ProductCategory) => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({
-  cartCount,
-  onOpenCart,
-  onNavigate,
-  activeSection,
-  onSelectCategory,
-}) => {
+export const Navbar: React.FC<NavbarProps> = ({ cartCount, onOpenCart }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const pathname = usePathname();
+  const router = useRouter();
 
   // Optimized passive scroll listener using requestAnimationFrame to prevent layout thrashing
   useEffect(() => {
@@ -51,22 +47,21 @@ export const Navbar: React.FC<NavbarProps> = ({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Main navigation items definition with semantic icons
+  // Main navigation items (routing multi-halaman)
   const navItems: NavItem[] = [
-    { label: 'Beranda', id: 'hero', icon: Home },
-    { label: 'Kategori', id: 'categories', icon: Grid },
-    { label: 'Katalog Produk', id: 'catalog', icon: ShoppingBag },
-    { label: 'Bahan Kakao', id: 'cocoa', icon: Leaf },
-    { label: 'Koleksi Rendang', id: 'rendang', icon: Flame },
-    { label: 'Tentang Kami', id: 'about', icon: BookOpen },
+    { label: 'Beranda', href: '/', icon: Home },
+    { label: 'Katalog', href: '/katalog', icon: Grid },
+    { label: 'Bahan Kakao', href: '/katalog?kategori=cocoa-ingredients', icon: Leaf },
+    { label: 'Koleksi Rendang', href: '/katalog?kategori=rendang', icon: Flame },
+    { label: 'Tentang', href: '/tentang', icon: BookOpen },
+    { label: 'Kontak', href: '/kontak', icon: Phone },
   ];
 
-  const handleNavClick = useCallback(
-    (id: string) => {
-      onNavigate(id);
-    },
-    [onNavigate]
-  );
+  const isNavActive = (href: string) => {
+    if (href === '/') return pathname === '/';
+    if (href.startsWith('/katalog')) return pathname === '/katalog';
+    return pathname === href;
+  };
 
   const handleDirectWhatsApp = () => {
     const message = encodeURIComponent(
@@ -118,12 +113,14 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16 sm:h-20">
               
-              {/* Left: Brand Logo Button */}
+              {/* Left: Brand Logo Button → Beranda */}
               <button
                 id="nav-logo-link"
-                onClick={() => handleNavClick('hero')}
+                onClick={() => {
+                  router.push('/');
+                }}
                 className="flex items-center text-left py-1 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B87932] transition-opacity hover:opacity-90"
-                aria-label="Malibou Chocolate - Kembali ke Beranda"
+                aria-label="Malibou Chocolate - Beranda"
               >
                 <MalibouLogo size="sm" hideSubOnMobile={true} />
               </button>
@@ -134,12 +131,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                 aria-label="Navigasi Utama"
               >
                 {navItems.map((item) => {
-                  const isActive = activeSection === item.id;
+                  const isActive = isNavActive(item.href);
                   return (
-                    <button
-                      key={item.id}
-                      id={`nav-link-${item.id}`}
-                      onClick={() => handleNavClick(item.id)}
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      id={`nav-link-${item.href === '/' ? 'home' : item.href.replace(/[^a-z]/gi, '')}`}
                       aria-current={isActive ? 'page' : undefined}
                       className={`min-h-[40px] px-3.5 py-2 rounded-full text-xs tracking-wider transition-all font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B87932] ${
                         isActive
@@ -148,7 +145,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       }`}
                     >
                       {item.label}
-                    </button>
+                    </Link>
                   );
                 })}
               </nav>
@@ -208,9 +205,6 @@ export const Navbar: React.FC<NavbarProps> = ({
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
         navItems={navItems}
-        activeSection={activeSection}
-        onNavigate={handleNavClick}
-        onSelectCategory={onSelectCategory}
         cartCount={cartCount}
         onOpenCart={onOpenCart}
       />

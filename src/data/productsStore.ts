@@ -71,6 +71,6 @@ export function nextProductCode(category: string, products: Product[]): string {
   return `PRD${String(maxSeq + 1).padStart(3, '0')}`;
 }
 
-export function newProductId(): string {
-  return `pr-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+export function nextProductId(products: Product[]): number {
+  return Math.max(0, ...products.map((p) => p.id)) + 1;
 }

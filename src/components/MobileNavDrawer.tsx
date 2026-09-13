@@ -1,4 +1,7 @@
+'use client';
+
 import React, { useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   X,
   ShoppingBag,
@@ -8,12 +11,11 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { MalibouLogo } from './MalibouLogo';
-import { ProductCategory } from '../types';
 import { OFFICIAL_WHATSAPP_NUMBER } from '../data/products';
 
 export interface NavItem {
   label: string;
-  id: string;
+  href: string;
   icon: React.ComponentType<{ className?: string }>;
 }
 
@@ -21,9 +23,6 @@ interface MobileNavDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   navItems: NavItem[];
-  activeSection: string;
-  onNavigate: (sectionId: string) => void;
-  onSelectCategory?: (category: ProductCategory) => void;
   cartCount: number;
   onOpenCart: () => void;
 }
@@ -32,12 +31,12 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
   isOpen,
   onClose,
   navItems,
-  activeSection,
-  onNavigate,
-  onSelectCategory,
   cartCount,
   onOpenCart,
 }) => {
+  const pathname = usePathname();
+  const router = useRouter();
+
   // Lock body scroll and handle Escape key
   useEffect(() => {
     if (!isOpen) return;
@@ -57,6 +56,12 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
 
   if (!isOpen) return null;
 
+  const isNavActive = (href: string) => {
+    if (href === '/') return pathname === '/';
+    if (href.startsWith('/katalog')) return pathname === '/katalog';
+    return pathname === href;
+  };
+
   const handleDirectWhatsApp = () => {
     const message = encodeURIComponent(
       'Halo Malibou Chocolate, saya ingin mengetahui informasi stok dan memesan produk cokelat & kakao.'
@@ -65,7 +70,17 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
     onClose();
   };
 
-  const quickCategories: { id: ProductCategory; name: string }[] = [
+  const goToCatalogCategory = (category: string) => {
+    router.push(`/katalog?kategori=${category}`);
+    onClose();
+  };
+
+  const goToHref = (href: string) => {
+    router.push(href);
+    onClose();
+  };
+
+  const quickCategories: { id: string; name: string }[] = [
     { id: 'chocolate-bar', name: 'Coklat Batangan' },
     { id: 'praline-snack', name: 'Paralin' },
     { id: 'chocolate-drink', name: 'Minuman Coklat' },
@@ -90,10 +105,7 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
         {/* Drawer Header */}
         <div className="p-4 sm:p-5 border-b border-[#2A140B]/8 flex items-center justify-between bg-white/90 sticky top-0 z-10 backdrop-blur-sm">
           <button
-            onClick={() => {
-              onNavigate('hero');
-              onClose();
-            }}
+            onClick={() => goToHref('/')}
             className="focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B87932] rounded-lg text-left"
             aria-label="Kembali ke Beranda"
           >
@@ -146,13 +158,7 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
               {quickCategories.map((cat) => (
                 <button
                   key={cat.id}
-                  onClick={() => {
-                    if (onSelectCategory) {
-                      onSelectCategory(cat.id);
-                    }
-                    onNavigate('catalog');
-                    onClose();
-                  }}
+                  onClick={() => goToCatalogCategory(cat.id)}
                   className="min-h-[36px] px-2.5 py-1 rounded-full text-xs font-medium bg-white hover:bg-[#F3ECE2] text-[#2A140B] border border-[#2A140B]/10 transition-colors active:scale-95"
                 >
                   {cat.name}
@@ -168,15 +174,12 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
             </span>
             <nav className="space-y-1" aria-label="Menu Seluler">
               {navItems.map((item) => {
-                const isActive = activeSection === item.id;
+                const isActive = isNavActive(item.href);
                 const Icon = item.icon;
                 return (
                   <button
-                    key={item.id}
-                    onClick={() => {
-                      onNavigate(item.id);
-                      onClose();
-                    }}
+                    key={item.href}
+                    onClick={() => goToHref(item.href)}
                     className={`w-full min-h-[44px] flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors text-left ${
                       isActive
                         ? 'bg-[#2A140B] text-[#FAF7F2] font-semibold'

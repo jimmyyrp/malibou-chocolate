@@ -4,6 +4,7 @@ dist/
 .next/
 out/
 coverage/
+tsconfig.tsbuildinfo
 .DS_Store
 *.log
 .env*

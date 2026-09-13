@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { X, Image as ImageIcon, Check, Upload, Loader2 } from 'lucide-react';
 import { Product, ProductCategory } from '../../types';
 import { CATEGORIES, formatRupiah } from '../../data/products';
-import { newProductId, nextProductCode } from '../../data/productsStore';
+import { nextProductCode, nextProductId } from '../../data/productsStore';
 import { useProducts } from '../../context/ProductsProvider';
 import {
   PRODUCT_IMAGES_BUCKET,
@@ -199,7 +199,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       CATEGORIES.find((c) => c.id === categoryValue)?.name || 'Coklat Batangan';
 
     const next: Product = {
-      id: product ? product.id : newProductId(),
+      id: product ? product.id : nextProductId(products),
       code: code.trim() || nextProductCode(categoryValue, products),
       name: name.trim(),
       category: categoryValue,

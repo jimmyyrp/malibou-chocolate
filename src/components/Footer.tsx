@@ -1,18 +1,21 @@
+'use client';
+
 import React from 'react';
 import { MapPin, Phone, ArrowUp, LayoutDashboard } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { MalibouLogo } from './MalibouLogo';
-import { ProductCategory } from '../types';
 import { OFFICIAL_WHATSAPP_NUMBER } from '../data/products';
 
-interface FooterProps {
-  onSelectCategory: (cat: ProductCategory) => void;
-  onNavigate: (sectionId: string) => void;
-}
+export const Footer: React.FC = () => {
+  const router = useRouter();
 
-export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onNavigate }) => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const goToCatalog = (category?: string) => {
+    router.push(category ? `/katalog?kategori=${category}` : '/katalog');
   };
 
   return (
@@ -46,10 +49,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onNavigate }) 
             <ul className="space-y-2 text-xs sm:text-sm text-[#EAE2D5]/75 font-normal">
               <li>
                 <button
-                  onClick={() => {
-                    onSelectCategory('chocolate-bar');
-                    onNavigate('catalog');
-                  }}
+                  onClick={() => goToCatalog('chocolate-bar')}
                   className="hover:text-[#C58B47] transition-colors"
                 >
                   Coklat Batangan (70%, 80%, 100% & Balado)
@@ -57,10 +57,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onNavigate }) 
               </li>
               <li>
                 <button
-                  onClick={() => {
-                    onSelectCategory('praline-snack');
-                    onNavigate('catalog');
-                  }}
+                  onClick={() => goToCatalog('praline-snack')}
                   className="hover:text-[#C58B47] transition-colors"
                 >
                   Paralin (Pouch, Kotak & Botol)
@@ -68,10 +65,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onNavigate }) 
               </li>
               <li>
                 <button
-                  onClick={() => {
-                    onSelectCategory('chocolate-drink');
-                    onNavigate('catalog');
-                  }}
+                  onClick={() => goToCatalog('chocolate-drink')}
                   className="hover:text-[#C58B47] transition-colors"
                 >
                   Minuman Coklat (3in1 & Sachet)
@@ -79,10 +73,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onNavigate }) 
               </li>
               <li>
                 <button
-                  onClick={() => {
-                    onSelectCategory('cocoa-ingredients');
-                    onNavigate('catalog');
-                  }}
+                  onClick={() => goToCatalog('cocoa-ingredients')}
                   className="hover:text-[#C58B47] transition-colors"
                 >
                   Cocoa (Powder, Biji & Butter)
@@ -90,10 +81,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onNavigate }) 
               </li>
               <li>
                 <button
-                  onClick={() => {
-                    onSelectCategory('ball-choco');
-                    onNavigate('catalog');
-                  }}
+                  onClick={() => goToCatalog('ball-choco')}
                   className="hover:text-[#C58B47] transition-colors"
                 >
                   Ball Choco (Renyah Isi Lembut)
@@ -101,10 +89,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onNavigate }) 
               </li>
               <li>
                 <button
-                  onClick={() => {
-                    onSelectCategory('rendang');
-                    onNavigate('catalog');
-                  }}
+                  onClick={() => goToCatalog('rendang')}
                   className="hover:text-[#C58B47] transition-colors"
                 >
                   Rendang (Daging, Paru, Nangka & Bumbung)
@@ -121,7 +106,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onNavigate }) 
             <ul className="space-y-2 text-xs sm:text-sm text-[#EAE2D5]/75 font-normal mb-5">
               <li>
                 <button
-                  onClick={() => onNavigate('about')}
+                  onClick={() => router.push('/tentang')}
                   className="hover:text-[#C58B47] transition-colors"
                 >
                   Tentang Malibou
@@ -129,7 +114,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onNavigate }) 
               </li>
               <li>
                 <button
-                  onClick={() => onNavigate('cocoa')}
+                  onClick={() => goToCatalog('cocoa-ingredients')}
                   className="hover:text-[#C58B47] transition-colors"
                 >
                   Bahan Baku Kakao Murni

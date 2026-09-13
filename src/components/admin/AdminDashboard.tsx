@@ -67,7 +67,7 @@ export const AdminDashboard: React.FC = () => {
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<'all' | ProductCategory>('all');
   const [sortBy, setSortBy] = useState<'code' | 'name' | 'price-asc' | 'price-desc'>('code');
-  const [selection, setSelection] = useState<Set<string>>(() => new Set());
+  const [selection, setSelection] = useState<Set<number>>(() => new Set());
   const [defaultCategory, setDefaultCategory] = useState<ProductCategory>('chocolate-bar');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -149,7 +149,7 @@ export const AdminDashboard: React.FC = () => {
     });
   };
 
-  const toggleOne = (id: string) => {
+  const toggleOne = (id: number) => {
     setSelection((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
