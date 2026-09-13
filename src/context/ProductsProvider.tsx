@@ -97,7 +97,7 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
           .select('*')
           .order('sort_order', { ascending: true });
         if (cancelled) return;
-        if (!error && data && data.length > 0) {
+        if (!error && data) {
           setProducts(data.map((row) => rowToProduct(row as ProductRow)));
         }
         setLoaded(true);

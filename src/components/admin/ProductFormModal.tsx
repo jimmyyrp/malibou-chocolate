@@ -1,11 +1,17 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
-import { X, Image as ImageIcon, Check } from 'lucide-react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { X, Image as ImageIcon, Check, Upload, Loader2 } from 'lucide-react';
 import { Product, ProductCategory } from '../../types';
 import { CATEGORIES, formatRupiah } from '../../data/products';
 import { newProductId, nextProductCode } from '../../data/productsStore';
 import { useProducts } from '../../context/ProductsProvider';
+import {
+  PRODUCT_IMAGES_BUCKET,
+  supabaseAdmin,
+  supabasePublic,
+  toSafeImageUrl,
+} from '../../lib/supabase';
 
 interface ProductFormModalProps {
   open: boolean;
@@ -44,6 +50,9 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
   const [description, setDescription] = useState('');
   const [featured, setFeatured] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const isEdit = !!product;
 
@@ -66,11 +75,12 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       setPrice('');
       setWeight('');
       setUnit('pcs');
-      setImageUrl('https://images.unsplash.com/photo-1549007994-cb92caebd54b?auto=format&fit=crop&w=800&q=80');
+      setImageUrl('');
       setDescription('');
       setFeatured(false);
     }
     setErrors({});
+    setUploadError(null);
   }, [open, product, defaultCategory]);
 
   useEffect(() => {
@@ -107,6 +117,57 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     }
   }, [imageUrl]);
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+
+    if (!file.type || !file.type.startsWith('image/')) {
+      setUploadError('File harus berupa gambar (jpeg/png/webp/gif/avif).');
+      return;
+    }
+
+    const client = supabaseAdmin ?? supabasePublic;
+    if (!client) {
+      setUploadError(
+        'Supabase belum dikonfigurasi. Isi env lalu build ulang, atau pakai URL langsung.'
+      );
+      return;
+    }
+
+    setUploading(true);
+    setUploadError(null);
+    try {
+      const cleanCode = (code.trim() || 'new')
+        .replace(/[^a-zA-Z0-9_-]+/g, '-')
+        .toLowerCase();
+      const extMap: Record<string, string> = {
+        'image/jpeg': 'jpg',
+        'image/png': 'png',
+        'image/webp': 'webp',
+        'image/gif': 'gif',
+        'image/avif': 'avif',
+      };
+      const ext = extMap[file.type] || 'jpg';
+      const path = `products/${cleanCode}-${Date.now()}.${ext}`;
+
+      const { error: upErr } = await client.storage
+        .from(PRODUCT_IMAGES_BUCKET)
+        .upload(path, file, { upsert: true, contentType: file.type });
+      if (upErr) throw new Error(upErr.message);
+
+      setImageUrl(toSafeImageUrl(path));
+    } catch (err) {
+      setUploadError(
+        err instanceof Error && err.message
+          ? err.message
+          : 'Gagal mengunggah gambar ke bucket.'
+      );
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const validate = (): boolean => {
     const nextErrors: FormErrors = {};
     if (!name.trim()) {
@@ -119,6 +180,8 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     }
     if (imageUrl.trim() && !imageUrlValid) {
       nextErrors.imageUrl = 'URL gambar harus diawali http:// atau https://.';
+    } else if (!imageUrl.trim()) {
+      nextErrors.imageUrl = 'Unggah gambar ke bucket atau isi URL produk.';
     }
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
@@ -145,7 +208,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       unit: unit.trim() || 'pcs',
       weight: weight.trim() || undefined,
       description: description.trim(),
-      imageUrl: imageUrl.trim() || 'https://images.unsplash.com/photo-1549007994-cb92caebd54b?auto=format&fit=crop&w=800&q=80',
+      imageUrl: toSafeImageUrl(imageUrl),
       featured,
     };
     onSave(next);
@@ -309,7 +372,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
 
           <div>
             <label htmlFor="pf-image" className="block text-xs font-semibold text-[#5E3622] mb-1.5">
-              URL Gambar
+              Gambar Produk
             </label>
             <div className="flex items-center gap-3">
               <div className="flex-1">
@@ -318,7 +381,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                   type="url"
                   value={imageUrl}
                   onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="https://images.unsplash.com/..."
+                  placeholder="URL gambar atau path bucket (mis. products/cb-070.jpg)"
                   className={errors.imageUrl ? fieldErr : fieldOk}
                 />
               </div>
@@ -335,6 +398,44 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                 )}
               </div>
             </div>
+            <div className="mt-2.5 flex items-center gap-2.5">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading || !code.trim()}
+                className="min-h-[40px] inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-[#2A140B] bg-white border border-[#2A140B]/15 hover:bg-[#F3ECE2] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {uploading ? (
+                  <Loader2 className="w-4 h-4 animate-spin text-[#B87932]" />
+                ) : (
+                  <Upload className="w-4 h-4 text-[#B87932]" />
+                )}
+                <span>{uploading ? 'Mengunggah…' : 'Unggah ke Bucket'}</span>
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageUpload}
+              />
+              {imageUrl && (
+                <span className="text-[11px] text-[#5E3622]/60">
+                  Tersimpan di bucket{' '}
+                  <code className="text-[#B87932]">{PRODUCT_IMAGES_BUCKET}</code>
+                </span>
+              )}
+            </div>
+            {!code.trim() && (
+              <p className="mt-1 text-[11px] text-[#5E3622]/60">
+                Isi kode produk dulu agar gambar tersimpan ke bucket (kode-<code>timestamp</code>).
+              </p>
+            )}
+            {uploadError && (
+              <p role="alert" className="mt-1.5 text-xs font-medium text-red-600">
+                {uploadError}
+              </p>
+            )}
             {errors.imageUrl && (
               <p role="alert" className="mt-1.5 text-xs font-medium text-red-600">
                 {errors.imageUrl}

@@ -11,6 +11,7 @@
     "preview": "serve out -l 3000",
     "db:migrate": "node scripts/migrate.mjs",
     "db:migrate:reset": "node scripts/migrate.mjs --reset",
+    "db:images": "node scripts/upload-images.mjs",
     "db:verify": "node scripts/verify.mjs"
   },
   "dependencies": {
