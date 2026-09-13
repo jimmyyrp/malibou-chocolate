@@ -31,13 +31,14 @@ function FeaturedProducts() {
         <div>
           <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#B87932] block mb-2">
             <Sparkles className="w-3.5 h-3.5" />
-            Koleksi Unggulan
+            Produk Pilihan
           </span>
           <h2 className="font-serif text-3xl sm:text-4xl font-bold text-[#2A140B] tracking-tight">
-            Produk Terlaris Malibou
+            Koleksi Unggulan Malibou
           </h2>
           <p className="text-sm sm:text-base text-[#5E3622] mt-1 max-w-xl">
-            Pilihan favorit pelanggan — dari cokelat batangan murni hingga rendang spesial yang hanya ada di Malibou.
+            Sajian pilihan dari seluruh katalog — cokelat batangan murni, minuman
+            cokelat, bahan kakao, hingga varian rendang spesial khas Malibou.
           </p>
         </div>
 

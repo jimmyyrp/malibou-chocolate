@@ -66,7 +66,7 @@ export const AdminDashboard: React.FC = () => {
   const [adminUser, setAdminUser] = useState('');
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<'all' | ProductCategory>('all');
-  const [sortBy, setSortBy] = useState<'code' | 'name' | 'price-asc' | 'price-desc'>('code');
+  const [sortBy, setSortBy] = useState<'name' | 'price-asc' | 'price-desc'>('name');
   const [selection, setSelection] = useState<Set<number>>(() => new Set());
   const [defaultCategory, setDefaultCategory] = useState<ProductCategory>('chocolate-bar');
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -102,7 +102,6 @@ export const AdminDashboard: React.FC = () => {
         const q = search.toLowerCase();
         return (
           p.name.toLowerCase().includes(q) ||
-          p.code.toLowerCase().includes(q) ||
           p.categoryName.toLowerCase().includes(q)
         );
       }
@@ -119,7 +118,7 @@ export const AdminDashboard: React.FC = () => {
         result = [...result].sort((a, b) => b.price - a.price);
         break;
       default:
-        result = [...result].sort((a, b) => a.code.localeCompare(b.code));
+        break;
     }
     return result;
   }, [products, search, categoryFilter, sortBy]);
@@ -347,7 +346,6 @@ export const AdminDashboard: React.FC = () => {
               aria-label="Urutkan produk"
               className="px-3 py-2.5 text-xs sm:text-sm rounded-xl bg-white border border-[#2A140B]/10 text-[#2A140B] focus:outline-none focus:border-[#B87932] appearance-none cursor-pointer pr-8"
             >
-              <option value="code">Urut: Kode Produk</option>
               <option value="name">Urut: Nama (A–Z)</option>
               <option value="price-asc">Urut: Harga Terendah</option>
               <option value="price-desc">Urut: Harga Tertinggi</option>
@@ -461,7 +459,6 @@ export const AdminDashboard: React.FC = () => {
                   </div>
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-[#2A140B] truncate">{p.name}</p>
-                    <p className="text-[11px] text-[#5E3622]/60 font-mono">{p.code}</p>
                   </div>
                 </div>
                 <div>
@@ -537,7 +534,6 @@ export const AdminDashboard: React.FC = () => {
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
                         <p className="text-sm font-bold text-[#2A140B] leading-snug">{p.name}</p>
-                        <p className="text-[11px] text-[#5E3622]/60 font-mono">{p.code}</p>
                       </div>
                       <button
                         onClick={() => toggleFeatured(p)}

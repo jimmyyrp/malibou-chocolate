@@ -78,7 +78,7 @@ async function main() {
 
   const { data, error } = await supabase
     .from('products')
-    .select('id, code, image_url');
+    .select('id, image_url');
   if (error) {
     console.error('ERROR membaca produk:', error.message);
     process.exit(1);
@@ -96,7 +96,7 @@ async function main() {
   let ok = 0;
   for (const p of pending) {
     try {
-      console.log(`  [${p.code}] ${p.image_url}`);
+      console.log(`  [id ${p.id}] ${p.image_url}`);
       const res = await fetch(p.image_url);
       if (!res.ok) {
         console.log(`    ! download gagal (${res.status}) — dilewati`);
@@ -105,7 +105,7 @@ async function main() {
       const buffer = Buffer.from(await res.arrayBuffer());
       const contentType = res.headers.get('content-type') || 'image/jpeg';
       const ext = extFromContentType(contentType) || 'jpg';
-      const path = `products/${p.code}.${ext}`;
+      const path = `products/${p.id}.${ext}`;
 
       const { error: upErr } = await supabase.storage
         .from(BUCKET)

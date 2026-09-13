@@ -162,7 +162,7 @@ async function main() {
     const { rows: orphan } = await client.query(`
       select (select count(*) from public.products p left join public.categories c on c.id = p.category_id where c.id is null)::int as orphan_products,
              (select count(*) from public.products where price < 0)::int as neg_price,
-             (select count(*) from public.products where code is null or name is null or description is null or image_url is null)::int as null_fields
+             (select count(*) from public.products where name is null or description is null or image_url is null)::int as null_fields
     `);
     orphan[0].orphan_products === 0 ? ok('tidak ada produk tanpa kategori') : fail(`produk tanpa kategori: ${orphan[0].orphan_products}`);
     orphan[0].neg_price === 0 ? ok('tidak ada harga negatif') : fail(`harga negatif: ${orphan[0].neg_price}`);
@@ -227,7 +227,7 @@ async function main() {
   // -----------------------------------------------------------------
   console.log('\n== Uji REST API (key publishable) ==');
   try {
-    const res = await fetch(`${projectUrl}/rest/v1/products?select=id,code,name,price&limit=3`, {
+    const res = await fetch(`${projectUrl}/rest/v1/products?select=id,name,price&limit=3`, {
       headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}`, Connection: 'close' },
     });
     const text = await res.text();

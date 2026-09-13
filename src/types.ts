@@ -8,7 +8,6 @@ export type ProductCategory =
 
 export interface Product {
   id: number;
-  code: string;
   name: string;
   category: ProductCategory;
   categoryName: string;

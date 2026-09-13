@@ -115,7 +115,7 @@ export const ProductCatalog: React.FC<ProductCatalogProps> = ({
               className="pl-3 pr-7 py-2 text-xs sm:text-sm rounded-full bg-white border border-[#2A140B]/10 text-[#2A140B] focus:outline-none focus:border-[#B87932] cursor-pointer appearance-none transition-colors"
               aria-label="Urutkan produk"
             >
-              <option value="featured">Paling Populer</option>
+              <option value="featured">Produk Unggulan</option>
               <option value="price-asc">Harga: Terendah</option>
               <option value="price-desc">Harga: Tertinggi</option>
               <option value="name">Nama: A – Z</option>

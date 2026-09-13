@@ -232,7 +232,7 @@ async function main() {
 
     // Contoh isi Data Katalog
     const { rows: products } = await client.query(`
-      select p.id, p.code, p.name, c.name as kategori, p.price
+      select p.id, p.name, c.name as kategori, p.price
       from public.products p
       join public.categories c on c.id = p.category_id
       order by p.sort_order
@@ -241,7 +241,7 @@ async function main() {
     console.log('\nContoh 5 produk pertama:');
     for (const p of products) {
       console.log(
-        `  ${p.code}  ${p.name.padEnd(34)} ${p.kategori.padEnd(16)} Rp ${p.price}`
+        `  ${String(p.id).padEnd(4)} ${p.name.padEnd(34)} ${p.kategori.padEnd(16)} Rp ${p.price}`
       );
     }
     console.log('\nMigrasi selesai. ✓');

@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { X, Image as ImageIcon, Check, Upload, Loader2 } from 'lucide-react';
 import { Product, ProductCategory } from '../../types';
 import { CATEGORIES, formatRupiah } from '../../data/products';
-import { nextProductCode, nextProductId } from '../../data/productsStore';
+import { nextProductId } from '../../data/productsStore';
 import { useProducts } from '../../context/ProductsProvider';
 import {
   PRODUCT_IMAGES_BUCKET,
@@ -41,7 +41,6 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
   const { products } = useProducts();
 
   const [name, setName] = useState('');
-  const [code, setCode] = useState('');
   const [category, setCategory] = useState<ProductCategory>(defaultCategory);
   const [price, setPrice] = useState('');
   const [weight, setWeight] = useState('');
@@ -60,7 +59,6 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     if (!open) return;
     if (product) {
       setName(product.name);
-      setCode(product.code);
       setCategory(product.category);
       setPrice(String(product.price));
       setWeight(product.weight || '');
@@ -70,7 +68,6 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       setFeatured(!!product.featured);
     } else {
       setName('');
-      setCode('');
       setCategory(defaultCategory);
       setPrice('');
       setWeight('');
@@ -82,11 +79,6 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     setErrors({});
     setUploadError(null);
   }, [open, product, defaultCategory]);
-
-  useEffect(() => {
-    if (!open || product) return;
-    setCode(nextProductCode(category, products));
-  }, [open, product, category, products]);
 
   useEffect(() => {
     if (!open) return;
@@ -138,9 +130,11 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     setUploading(true);
     setUploadError(null);
     try {
-      const cleanCode = (code.trim() || 'new')
+      const cleanName = (name.trim() || 'produk')
         .replace(/[^a-zA-Z0-9_-]+/g, '-')
-        .toLowerCase();
+        .toLowerCase()
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 60);
       const extMap: Record<string, string> = {
         'image/jpeg': 'jpg',
         'image/png': 'png',
@@ -149,7 +143,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
         'image/avif': 'avif',
       };
       const ext = extMap[file.type] || 'jpg';
-      const path = `products/${cleanCode}-${Date.now()}.${ext}`;
+      const path = `products/${cleanName}-${Date.now()}.${ext}`;
 
       const { error: upErr } = await client.storage
         .from(PRODUCT_IMAGES_BUCKET)
@@ -200,7 +194,6 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
 
     const next: Product = {
       id: product ? product.id : nextProductId(products),
-      code: code.trim() || nextProductCode(categoryValue, products),
       name: name.trim(),
       category: categoryValue,
       categoryName,
@@ -241,7 +234,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
               {isEdit ? 'Edit Produk' : 'Tambah Produk Baru'}
             </h2>
             <p className="text-[11px] text-[#5E3622]/70">
-              {isEdit ? `Kode saat ini: ${product.code}` : 'Lengkapi detail produk di bawah ini.'}
+              Lengkapi detail produk di bawah ini.
             </p>
           </div>
           <button
@@ -260,8 +253,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
           noValidate
           className="flex-1 overflow-y-auto px-5 py-4 space-y-4"
         >
-          <div className="grid grid-cols-2 gap-3">
-            <div className="col-span-2 sm:col-span-1">
+          <div>
               <label htmlFor="pf-category" className="block text-xs font-semibold text-[#5E3622] mb-1.5">
                 Kategori <span className="text-red-500">*</span>
               </label>
@@ -278,20 +270,6 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                 ))}
               </select>
             </div>
-            <div className="col-span-2 sm:col-span-1">
-              <label htmlFor="pf-code" className="block text-xs font-semibold text-[#5E3622] mb-1.5">
-                Kode Produk
-              </label>
-              <input
-                id="pf-code"
-                type="text"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                placeholder="Otomatis"
-                className={fieldOk}
-              />
-            </div>
-          </div>
 
           <div>
             <label htmlFor="pf-name" className="block text-xs font-semibold text-[#5E3622] mb-1.5">
@@ -402,7 +380,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                disabled={uploading || !code.trim()}
+                disabled={uploading}
                 className="min-h-[40px] inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-[#2A140B] bg-white border border-[#2A140B]/15 hover:bg-[#F3ECE2] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {uploading ? (
@@ -426,11 +404,6 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                 </span>
               )}
             </div>
-            {!code.trim() && (
-              <p className="mt-1 text-[11px] text-[#5E3622]/60">
-                Isi kode produk dulu agar gambar tersimpan ke bucket (kode-<code>timestamp</code>).
-              </p>
-            )}
             {uploadError && (
               <p role="alert" className="mt-1.5 text-xs font-medium text-red-600">
                 {uploadError}

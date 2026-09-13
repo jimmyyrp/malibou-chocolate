@@ -54,7 +54,6 @@ export const PRODUCTS: Product[] = [
   // 01 - Coklat Batangan
   {
     id: 1,
-    code: 'PRD001',
     name: 'Coklat Batangan 70%',
     category: 'chocolate-bar',
     categoryName: 'Coklat Batangan',
@@ -66,7 +65,6 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 2,
-    code: 'PRD002',
     name: 'Coklat Batangan 80%',
     category: 'chocolate-bar',
     categoryName: 'Coklat Batangan',
@@ -77,7 +75,6 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 3,
-    code: 'PRD003',
     name: 'Coklat Batangan 100% (Dark Chocolate)',
     category: 'chocolate-bar',
     categoryName: 'Coklat Batangan',
@@ -89,7 +86,6 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 4,
-    code: 'PRD004',
     name: 'Coklat Batangan Balado',
     category: 'chocolate-bar',
     categoryName: 'Coklat Batangan',
@@ -102,7 +98,6 @@ export const PRODUCTS: Product[] = [
   // 02 - Paralin
   {
     id: 5,
-    code: 'PRD005',
     name: 'Coklat Paralin Pouch',
     category: 'praline-snack',
     categoryName: 'Paralin',
@@ -113,7 +108,6 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 6,
-    code: 'PRD006',
     name: 'Coklat Paralin Kotak',
     category: 'praline-snack',
     categoryName: 'Paralin',
@@ -124,7 +118,6 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 7,
-    code: 'PRD007',
     name: 'Coklat Paralin Botol Besar',
     category: 'praline-snack',
     categoryName: 'Paralin',
@@ -135,7 +128,6 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 8,
-    code: 'PRD008',
     name: 'Coklat Paralin Botol Kecil',
     category: 'praline-snack',
     categoryName: 'Paralin',
@@ -148,7 +140,6 @@ export const PRODUCTS: Product[] = [
   // 03 - Minuman Coklat
   {
     id: 9,
-    code: 'PRD009',
     name: 'Coklat 3in1 300gr',
     category: 'chocolate-drink',
     categoryName: 'Minuman Coklat',
@@ -161,7 +152,6 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 10,
-    code: 'PRD010',
     name: 'Coklat 3in1 500gr',
     category: 'chocolate-drink',
     categoryName: 'Minuman Coklat',
@@ -173,7 +163,6 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 11,
-    code: 'PRD011',
     name: 'Coklat 3in1 1000gr',
     category: 'chocolate-drink',
     categoryName: 'Minuman Coklat',
@@ -185,7 +174,6 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 12,
-    code: 'PRD012',
     name: 'Malicho Drink Sachet',
     category: 'chocolate-drink',
     categoryName: 'Minuman Coklat',
@@ -198,7 +186,6 @@ export const PRODUCTS: Product[] = [
   // 04 - Cocoa
   {
     id: 13,
-    code: 'PRD013',
     name: 'Cocoa Powder 300gr',
     category: 'cocoa-ingredients',
     categoryName: 'Cocoa',
@@ -211,7 +198,6 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 14,
-    code: 'PRD014',
     name: 'Cocoa Powder 1000gr',
     category: 'cocoa-ingredients',
     categoryName: 'Cocoa',
@@ -223,7 +209,6 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 15,
-    code: 'PRD015',
     name: 'Biji Kakao 250gr',
     category: 'cocoa-ingredients',
     categoryName: 'Cocoa',
@@ -236,7 +221,6 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 16,
-    code: 'PRD016',
     name: 'Cocoa Butter 250gr',
     category: 'cocoa-ingredients',
     categoryName: 'Cocoa',
@@ -248,7 +232,6 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 17,
-    code: 'PRD017',
     name: 'Cocoa Butter 1000gr',
     category: 'cocoa-ingredients',
     categoryName: 'Cocoa',
@@ -260,7 +243,6 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 18,
-    code: 'PRD029',
     name: 'Cocoa Powder 50gr',
     category: 'cocoa-ingredients',
     categoryName: 'Cocoa',
@@ -272,7 +254,6 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 19,
-    code: 'PRD030',
     name: 'Cocoa Powder 100gr',
     category: 'cocoa-ingredients',
     categoryName: 'Cocoa',
@@ -286,7 +267,6 @@ export const PRODUCTS: Product[] = [
   // 05 - Ball Choco
   {
     id: 20,
-    code: 'PRD018',
     name: 'Ball Choco Pouch',
     category: 'ball-choco',
     categoryName: 'Ball Choco',
@@ -299,7 +279,6 @@ export const PRODUCTS: Product[] = [
   // 06 - Rendang
   {
     id: 21,
-    code: 'PRD019',
     name: 'Rendang Coklat Daging 250gr',
     category: 'rendang',
     categoryName: 'Rendang',
@@ -312,7 +291,6 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 22,
-    code: 'PRD020',
     name: 'Rendang Daging 100gr (Sachet)',
     category: 'rendang',
     categoryName: 'Rendang',
@@ -325,7 +303,6 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 23,
-    code: 'PRD021',
     name: 'Rendang Forkids 200gr',
     category: 'rendang',
     categoryName: 'Rendang',
@@ -337,7 +314,6 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 24,
-    code: 'PRD022',
     name: 'Rendang Coklat Paru 250gr',
     category: 'rendang',
     categoryName: 'Rendang',
@@ -349,7 +325,6 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 25,
-    code: 'PRD023',
     name: 'Rendang Paru 100gr (Sachet)',
     category: 'rendang',
     categoryName: 'Rendang',
@@ -361,7 +336,6 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 26,
-    code: 'PRD024',
     name: 'Rendang Jengkol 250gr',
     category: 'rendang',
     categoryName: 'Rendang',
@@ -373,7 +347,6 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 27,
-    code: 'PRD025',
     name: 'Rendang Nangka 250gr',
     category: 'rendang',
     categoryName: 'Rendang',
@@ -385,7 +358,6 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 28,
-    code: 'PRD026',
     name: 'Rendang Nangka 100gr (Sachet)',
     category: 'rendang',
     categoryName: 'Rendang',
@@ -397,7 +369,6 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 29,
-    code: 'PRD027',
     name: 'Bumbung Rendang 250gr',
     category: 'rendang',
     categoryName: 'Rendang',
@@ -409,7 +380,6 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 30,
-    code: 'PRD028',
     name: 'Bumbung Rendang 100gr',
     category: 'rendang',
     categoryName: 'Rendang',

@@ -31,7 +31,6 @@ const ProductsContext = createContext<ProductsContextValue | null>(null);
 // Bentuk baris di tabel public.products (Supabase)
 interface ProductRow {
   id: number;
-  code: string;
   name: string;
   category_id: string;
   price: number;
@@ -50,7 +49,6 @@ const CATEGORY_NAMES: Record<string, string> = Object.fromEntries(
 function rowToProduct(row: ProductRow): Product {
   return {
     id: row.id,
-    code: row.code,
     name: row.name,
     category: row.category_id as ProductCategory,
     categoryName: CATEGORY_NAMES[row.category_id] ?? row.category_id,
@@ -66,7 +64,6 @@ function rowToProduct(row: ProductRow): Product {
 function productToRow(p: Product) {
   return {
     id: p.id,
-    code: p.code,
     name: p.name,
     category_id: p.category,
     price: p.price,

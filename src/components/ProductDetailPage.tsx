@@ -23,6 +23,22 @@ interface ProductDetailPageProps {
   productParam: string;
 }
 
+/**
+ * Peta kode lama (PRDxxx) ke id angka. Hanya untuk menjaga tautan yang
+ * sudah tersebar agar tetap terbuka; produk baru cukup memakai id angka.
+ */
+const LEGACY_CODE_TO_ID: Record<string, number> = (() => {
+  const map: Record<string, number> = {};
+  for (let i = 1; i <= 30; i += 1) {
+    map[`PRD${String(i).padStart(3, '0')}`] = i;
+  }
+  // Susunan nomor kode lama tidak berurutan dengan id produk.
+  map['PRD029'] = 18;
+  map['PRD030'] = 19;
+  map['PRD018'] = 20;
+  return map;
+})();
+
 export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   productParam,
 }) => {
@@ -36,13 +52,13 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   const numericId = Number(rawParam);
   const numericValid = Number.isFinite(numericId) && numericId > 0;
 
-  // Lookup: dukung id angka (katalog baru) dan kode produk lama (PRD019 / prd019)
+  // Lookup: id angka (katalog baru) atau kode lama yang dipetakan ke id.
   const product = useMemo(() => {
     if (numericValid) {
       return products.find((p) => p.id === numericId);
     }
-    const code = rawParam.toUpperCase();
-    return products.find((p) => p.code.toUpperCase() === code);
+    const legacyId = LEGACY_CODE_TO_ID[rawParam.toUpperCase()];
+    return legacyId ? products.find((p) => p.id === legacyId) : undefined;
   }, [products, rawParam, numericValid, numericId]);
 
   // Normalisasi URL kode lama -> URL canonical id angka
@@ -71,7 +87,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
           Produk tidak ditemukan
         </h1>
         <p className="text-sm text-[#5E3622] max-w-md mx-auto mb-8">
-          Produk yang Anda cari mungkin telah dihapus atau kode halaman tidak benar.
+          Produk yang Anda cari mungkin telah dihapus atau alamat halaman tidak benar.
           Silakan lihat katalog lengkap Malibou untuk produk terbaru.
         </p>
         <button
@@ -165,12 +181,6 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
           </h1>
 
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-[#5E3622]/80 mb-5">
-            {product.code && (
-              <span className="inline-flex items-center gap-1">
-                <Package className="w-3 h-3" />
-                <span>Kode {product.code}</span>
-              </span>
-            )}
             {(product.unit || product.weight) && (
               <span className="inline-flex items-center gap-1">
                 <span>

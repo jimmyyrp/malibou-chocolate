@@ -7,12 +7,12 @@ type StoredData = { version: number; signature: string; products: Product[] };
 
 /**
  * Signature katalog bawaan. Setiap perubahan pada daftar produk default
- * (nama, kode, harga, jumlah) otomatis membuat cache lama di browser
+ * (nama, harga, jumlah) otomatis membuat cache lama di browser
  * pengunjung dianggap basi dan dibuang, sehingga katalog yang tampil
  * selalu versi terbaru — bukan produk lama dari localStorage.
  */
 const DATA_SIGNATURE = PRODUCTS.map(
-  (p) => `${p.code}:${p.name}:${p.price}`
+  (p) => `${p.id}:${p.name}:${p.price}`
 ).join('|');
 
 export function loadProducts(): Product[] {
@@ -61,14 +61,6 @@ export function resetProducts(): Product[] {
     }
   }
   return PRODUCTS;
-}
-
-export function nextProductCode(category: string, products: Product[]): string {
-  const maxSeq = products.reduce((max, p) => {
-    const m = p.code.match(/^PRD(\d+)$/);
-    return m ? Math.max(max, parseInt(m[1], 10)) : max;
-  }, 0);
-  return `PRD${String(maxSeq + 1).padStart(3, '0')}`;
 }
 
 export function nextProductId(products: Product[]): number {
