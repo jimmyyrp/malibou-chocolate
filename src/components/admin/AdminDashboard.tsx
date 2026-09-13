@@ -17,6 +17,7 @@ import {
   Coins,
   Check,
   LayoutDashboard,
+  ShieldCheck,
 } from 'lucide-react';
 import { Product, ProductCategory } from '../../types';
 import { CATEGORIES, formatRupiah } from '../../data/products';
@@ -25,6 +26,7 @@ import { MalibouLogo } from '../MalibouLogo';
 import {
   ADMIN_SESSION_KEY,
   ADMIN_SESSION_VALUE,
+  ADMIN_USERNAME_KEY,
 } from '../../lib/adminConfig';
 import { LoginScreen } from './LoginScreen';
 import { ProductFormModal } from './ProductFormModal';
@@ -61,6 +63,7 @@ export const AdminDashboard: React.FC = () => {
     useProducts();
 
   const [authed, setAuthed] = useState<boolean | null>(null);
+  const [adminUser, setAdminUser] = useState('');
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<'all' | ProductCategory>('all');
   const [sortBy, setSortBy] = useState<'code' | 'name' | 'price-asc' | 'price-desc'>('code');
@@ -74,7 +77,9 @@ export const AdminDashboard: React.FC = () => {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const session = window.sessionStorage.getItem(ADMIN_SESSION_KEY);
+    const storedUser = window.sessionStorage.getItem(ADMIN_USERNAME_KEY) || '';
     setAuthed(session === ADMIN_SESSION_VALUE);
+    setAdminUser(storedUser);
   }, []);
 
   useEffect(() => {
@@ -155,14 +160,16 @@ export const AdminDashboard: React.FC = () => {
 
   const showToast = (message: string) => setToast(message);
 
-  const handleLogin = () => {
+  const handleLogin = (username: string) => {
     try {
       window.sessionStorage.setItem(ADMIN_SESSION_KEY, ADMIN_SESSION_VALUE);
+      window.sessionStorage.setItem(ADMIN_USERNAME_KEY, username);
     } catch {
       // abaikan
     }
+    setAdminUser(username);
     setAuthed(true);
-    showToast('Berhasil masuk ke dashboard katalog.');
+    showToast(`Berhasil masuk sebagai ${username}.`);
   };
 
   const handleSave = (product: Product) => {
@@ -217,10 +224,12 @@ export const AdminDashboard: React.FC = () => {
     } else if (confirm.kind === 'logout') {
       try {
         window.sessionStorage.removeItem(ADMIN_SESSION_KEY);
+        window.sessionStorage.removeItem(ADMIN_USERNAME_KEY);
       } catch {
         // abaikan
       }
       setAuthed(false);
+      setAdminUser('');
       setSelection(new Set());
       setSearch('');
       setCategoryFilter('all');
@@ -258,6 +267,12 @@ export const AdminDashboard: React.FC = () => {
               <LayoutDashboard className="w-3.5 h-3.5" />
               Dashboard
             </span>
+            {adminUser && (
+              <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#B87932]/10 text-[#7E4A30] text-[11px] font-semibold">
+                <ShieldCheck className="w-3 h-3 text-[#B87932]" />
+                {adminUser}
+              </span>
+            )}
           </div>
 
           <div className="flex items-center gap-2">

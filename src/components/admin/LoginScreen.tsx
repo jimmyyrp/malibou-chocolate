@@ -1,39 +1,55 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Lock, Eye, EyeOff, ShieldCheck, Info } from 'lucide-react';
+import { Lock, Eye, EyeOff, ShieldCheck, Info, User as UserIcon } from 'lucide-react';
 import { MalibouLogo } from '../MalibouLogo';
-import { ADMIN_PASSWORD } from '../../lib/adminConfig';
+import {
+  DEFAULT_ADMIN_PASSWORD,
+  DEFAULT_ADMIN_USERNAME,
+} from '../../lib/adminConfig';
+import { authenticateAdmin } from '../../lib/adminAuth';
 
 interface LoginScreenProps {
-  onLogin: () => void;
+  onLogin: (username: string) => void;
 }
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [shakeKey, setShakeKey] = useState(0);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!password.trim()) {
-      setError('Masukkan kata sandi terlebih dahulu.');
+    if (!username.trim() || !password) {
+      setError('Isi nama pengguna dan kata sandi terlebih dahulu.');
       setShakeKey((k) => k + 1);
       return;
     }
-    if (password === ADMIN_PASSWORD) {
-      setError(null);
-      onLogin();
-      return;
+    setLoading(true);
+    setError(null);
+    try {
+      const user = await authenticateAdmin(username, password);
+      if (user) {
+        onLogin(user.username);
+      } else {
+        setShakeKey((k) => k + 1);
+        setError('Nama pengguna atau kata sandi salah. Silakan coba lagi.');
+        setPassword('');
+      }
+    } catch {
+      setShakeKey((k) => k + 1);
+      setError('Gagal memverifikasi. Pastikan koneksi ke database aktif.');
+    } finally {
+      setLoading(false);
     }
-    setError('Kata sandi salah. Silakan coba lagi.');
-    setShakeKey((k) => k + 1);
-    setPassword('');
   };
 
   const handleAutofill = () => {
-    setPassword(ADMIN_PASSWORD);
+    setUsername(DEFAULT_ADMIN_USERNAME);
+    setPassword(DEFAULT_ADMIN_PASSWORD);
     setError(null);
   };
 
@@ -58,17 +74,46 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
             Dashboard Katalog
           </h1>
           <p className="text-xs sm:text-sm text-[#5E3622]/80">
-            Akses terbatas. Masukkan kata sandi untuk mengelola produk.
+            Akses terbatas. Masuk untuk mengelola produk.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           <div>
             <label
+              htmlFor="admin-username"
+              className="block text-xs font-semibold text-[#5E3622] mb-1.5"
+            >
+              Nama Pengguna
+            </label>
+            <div className="relative">
+              <input
+                id="admin-username"
+                type="text"
+                value={username}
+                onChange={(e) => {
+                  setUsername(e.target.value);
+                  if (error) setError(null);
+                }}
+                placeholder="admin"
+                autoComplete="username"
+                aria-invalid={!!error}
+                className={`w-full pl-3.5 pr-10 py-2.5 rounded-xl bg-white border text-sm text-[#2A140B] placeholder-[#5E3622]/40 focus:outline-none focus-visible:ring-2 transition-colors ${
+                  error
+                    ? 'border-red-400 focus-visible:ring-red-300'
+                    : 'border-[#2A140B]/10 focus-visible:ring-[#B87932] focus:border-[#B87932]'
+                }`}
+              />
+              <UserIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#5E3622]/40 pointer-events-none" />
+            </div>
+          </div>
+
+          <div>
+            <label
               htmlFor="admin-password"
               className="block text-xs font-semibold text-[#5E3622] mb-1.5"
             >
-              Kata Sandi Admin
+              Kata Sandi
             </label>
             <div className="relative">
               <input
@@ -106,10 +151,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
 
           <button
             type="submit"
-            className="w-full min-h-[46px] inline-flex items-center justify-center gap-2 rounded-xl bg-[#2A140B] hover:bg-[#3A1F14] active:scale-[0.99] text-[#FAF7F2] text-sm font-semibold tracking-wider shadow-xs transition-all"
+            disabled={loading}
+            className="w-full min-h-[46px] inline-flex items-center justify-center gap-2 rounded-xl bg-[#2A140B] hover:bg-[#3A1F14] active:scale-[0.99] text-[#FAF7F2] text-sm font-semibold tracking-wider shadow-xs transition-all disabled:opacity-60 disabled:cursor-not-allowed"
           >
             <ShieldCheck className="w-4 h-4 text-[#C58B47]" />
-            <span>Masuk ke Dashboard</span>
+            <span>{loading ? 'Memverifikasi...' : 'Masuk ke Dashboard'}</span>
           </button>
         </form>
 
@@ -117,16 +163,16 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
           <Info className="w-4 h-4 text-[#B87932] flex-shrink-0 mt-0.5" />
           <div className="space-y-1.5">
             <p>
-              Mode statis (demo): gunakan kata sandi{' '}
+              Kredensial default:{' '}
               <code className="px-1.5 py-0.5 rounded bg-white border border-[#2A140B]/10 font-semibold text-[#2A140B]">
-                {ADMIN_PASSWORD}
+                {DEFAULT_ADMIN_USERNAME} / {DEFAULT_ADMIN_PASSWORD}
               </code>
             </p>
             <button
               onClick={handleAutofill}
               className="text-[#B87932] font-semibold hover:text-[#2A140B] transition-colors cursor-pointer"
             >
-              Isi otomatis kata sandi
+              Isi otomatis kredensial
             </button>
           </div>
         </div>
