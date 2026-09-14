@@ -1,12 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Lock, Eye, EyeOff, ShieldCheck, Info, User as UserIcon } from 'lucide-react';
+import { Lock, Eye, EyeOff, ShieldCheck, User as UserIcon } from 'lucide-react';
 import { MalibouLogo } from '../MalibouLogo';
-import {
-  DEFAULT_ADMIN_PASSWORD,
-  DEFAULT_ADMIN_USERNAME,
-} from '../../lib/adminConfig';
 import { authenticateAdmin } from '../../lib/adminAuth';
 
 interface LoginScreenProps {
@@ -49,12 +45,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleAutofill = () => {
-    setUsername(DEFAULT_ADMIN_USERNAME);
-    setPassword(DEFAULT_ADMIN_PASSWORD);
-    setError(null);
   };
 
   return (
@@ -162,24 +152,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
             <span>{loading ? 'Memverifikasi...' : 'Masuk ke Dashboard'}</span>
           </button>
         </form>
-
-        <div className="mt-5 p-3 rounded-xl bg-[#F3ECE2] border border-[#2A140B]/8 flex items-start gap-2.5 text-xs text-[#5E3622]">
-          <Info className="w-4 h-4 text-[#B87932] flex-shrink-0 mt-0.5" />
-          <div className="space-y-1.5">
-            <p>
-              Kredensial default:{' '}
-              <code className="px-1.5 py-0.5 rounded bg-white border border-[#2A140B]/10 font-semibold text-[#2A140B]">
-                {DEFAULT_ADMIN_USERNAME} / {DEFAULT_ADMIN_PASSWORD}
-              </code>
-            </p>
-            <button
-              onClick={handleAutofill}
-              className="text-[#B87932] font-semibold hover:text-[#2A140B] transition-colors cursor-pointer"
-            >
-              Isi otomatis kredensial
-            </button>
-          </div>
-        </div>
       </div>
 
       <p className="mt-6 text-[11px] text-[#5E3622]/60 flex items-center gap-1.5">
