@@ -26,6 +26,7 @@ import { DualConfirmModal } from './DualConfirmModal';
 import { AdminSidebar, AdminView } from './AdminSidebar';
 import { DashboardOverview } from './DashboardOverview';
 import { ProductActionMenu } from './ProductActionMenu';
+import { resetBodyScroll } from '../../lib/scrollLock';
 
 const CATEGORY_IDS = CATEGORIES.map((c) => c.id) as ProductCategory[];
 
@@ -71,6 +72,10 @@ export const AdminDashboard: React.FC = () => {
   const [view, setView] = useState<AdminView>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [actionMenuId, setActionMenuId] = useState<number | null>(null);
+
+  useEffect(() => {
+    resetBodyScroll();
+  }, [authed]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;

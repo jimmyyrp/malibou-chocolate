@@ -15,6 +15,7 @@ import {
   ImageOff,
   Scissors,
 } from 'lucide-react';
+import { lockBodyScroll, unlockBodyScroll } from '../../lib/scrollLock';
 
 interface ImageEditorModalProps {
   open: boolean;
@@ -336,11 +337,10 @@ export const ImageEditorModal: React.FC<ImageEditorModalProps> = ({
       if (e.key === 'Escape') handleClose();
     };
     window.addEventListener('keydown', onKey);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    lockBodyScroll();
     return () => {
       window.removeEventListener('keydown', onKey);
-      document.body.style.overflow = prevOverflow;
+      unlockBodyScroll();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, dirty, confirmDiscard]);

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { AlertTriangle, X } from 'lucide-react';
+import { lockBodyScroll, unlockBodyScroll } from '../../lib/scrollLock';
 
 interface DualConfirmModalProps {
   open: boolean;
@@ -37,11 +38,10 @@ export const DualConfirmModal: React.FC<DualConfirmModalProps> = ({
       }
     };
     window.addEventListener('keydown', onKey);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    lockBodyScroll();
     return () => {
       window.removeEventListener('keydown', onKey);
-      document.body.style.overflow = prevOverflow;
+      unlockBodyScroll();
     };
   }, [open, onCancel]);
 

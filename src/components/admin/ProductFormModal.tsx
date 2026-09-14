@@ -7,6 +7,7 @@ import { CATEGORIES, formatRupiah } from '../../data/products';
 import { nextProductId } from '../../data/productsStore';
 import { useProducts } from '../../context/ProductsProvider';
 import { ImageEditorModal } from './ImageEditorModal';
+import { lockBodyScroll, unlockBodyScroll } from '../../lib/scrollLock';
 import {
   PRODUCT_IMAGES_BUCKET,
   supabaseAdmin,
@@ -91,11 +92,10 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       if (e.key === 'Escape' && !editorActive) onClose();
     };
     window.addEventListener('keydown', onKey);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    lockBodyScroll();
     return () => {
       window.removeEventListener('keydown', onKey);
-      document.body.style.overflow = prevOverflow;
+      unlockBodyScroll();
     };
   }, [open, onClose, editorActive]);
 
