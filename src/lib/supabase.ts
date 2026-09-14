@@ -60,6 +60,7 @@ export const storageImageUrl = (path: string): string =>
 export const toSafeImageUrl = (value: string): string => {
   const trimmed = value.trim();
   if (!trimmed) return trimmed;
+  if (trimmed.startsWith('data:') || trimmed.startsWith('blob:')) return trimmed;
   try {
     const url = new URL(trimmed);
     if (url.protocol === 'http:' || url.protocol === 'https:') return trimmed;

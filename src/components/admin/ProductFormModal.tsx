@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { X, Image as ImageIcon, Check, Upload, Loader2 } from 'lucide-react';
+import { X, Image as ImageIcon, Check, Upload, Loader2, Pencil } from 'lucide-react';
 import { Product, ProductCategory } from '../../types';
 import { CATEGORIES, formatRupiah } from '../../data/products';
 import { nextProductId } from '../../data/productsStore';
 import { useProducts } from '../../context/ProductsProvider';
+import { ImageEditorModal } from './ImageEditorModal';
 import {
   PRODUCT_IMAGES_BUCKET,
   supabaseAdmin,
@@ -52,6 +53,8 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [editorSrc, setEditorSrc] = useState<string | null>(null);
+  const editorObjUrlRef = useRef<string | null>(null);
 
   const isEdit = !!product;
 
@@ -80,10 +83,12 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     setUploadError(null);
   }, [open, product, defaultCategory]);
 
+  const editorActive = !!editorSrc;
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape' && !editorActive) onClose();
     };
     window.addEventListener('keydown', onKey);
     const prevOverflow = document.body.style.overflow;
@@ -92,7 +97,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       window.removeEventListener('keydown', onKey);
       document.body.style.overflow = prevOverflow;
     };
-  }, [open, onClose]);
+  }, [open, onClose, editorActive]);
 
   const priceNumber = useMemo(() => {
     const n = parseInt(price.replace(/\D/g, ''), 10) || 0;
@@ -101,15 +106,17 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
 
   const imageUrlValid = useMemo(() => {
     if (!imageUrl.trim()) return false;
+    const v = imageUrl.trim();
+    if (v.startsWith('data:') || v.startsWith('blob:')) return true;
     try {
-      const url = new URL(imageUrl.trim());
+      const url = new URL(v);
       return url.protocol === 'http:' || url.protocol === 'https:';
     } catch {
       return false;
     }
   }, [imageUrl]);
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFilePicked = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
@@ -119,38 +126,53 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       return;
     }
 
-    const client = supabaseAdmin ?? supabasePublic;
-    if (!client) {
-      setUploadError(
-        'Supabase belum dikonfigurasi. Isi env lalu build ulang, atau pakai URL langsung.'
-      );
-      return;
-    }
+    if (editorObjUrlRef.current) URL.revokeObjectURL(editorObjUrlRef.current);
+    const objectUrl = URL.createObjectURL(file);
+    editorObjUrlRef.current = objectUrl;
+    setUploadError(null);
+    setEditorSrc(objectUrl);
+  };
 
+  const closeEditor = () => {
+    if (editorObjUrlRef.current) {
+      URL.revokeObjectURL(editorObjUrlRef.current);
+      editorObjUrlRef.current = null;
+    }
+    setEditorSrc(null);
+  };
+
+  const openEditorForExisting = () => {
+    if (!imageUrl.trim()) return;
+    setUploadError(null);
+    setEditorSrc(toSafeImageUrl(imageUrl));
+  };
+
+  const handleEditorApply = async (
+    dataUrl: string,
+    dims: { width: number; height: number }
+  ) => {
     setUploading(true);
     setUploadError(null);
     try {
-      const cleanName = (name.trim() || 'produk')
-        .replace(/[^a-zA-Z0-9_-]+/g, '-')
-        .toLowerCase()
-        .replace(/^-+|-+$/g, '')
-        .slice(0, 60);
-      const extMap: Record<string, string> = {
-        'image/jpeg': 'jpg',
-        'image/png': 'png',
-        'image/webp': 'webp',
-        'image/gif': 'gif',
-        'image/avif': 'avif',
-      };
-      const ext = extMap[file.type] || 'jpg';
-      const path = `products/${cleanName}-${Date.now()}.${ext}`;
-
-      const { error: upErr } = await client.storage
-        .from(PRODUCT_IMAGES_BUCKET)
-        .upload(path, file, { upsert: true, contentType: file.type });
-      if (upErr) throw new Error(upErr.message);
-
-      setImageUrl(toSafeImageUrl(path));
+      const client = supabaseAdmin ?? supabasePublic;
+      if (!client) {
+        setImageUrl(dataUrl);
+      } else {
+        const blob = await (await fetch(dataUrl)).blob();
+        const cleanName = (name.trim() || 'produk')
+          .replace(/[^a-zA-Z0-9_-]+/g, '-')
+          .toLowerCase()
+          .replace(/^-+|-+$/g, '')
+          .slice(0, 60);
+        const isPng = dataUrl.startsWith('data:image/png');
+        const ext = isPng ? 'png' : 'jpg';
+        const path = `products/${cleanName}-${Date.now()}.${ext}`;
+        const { error: upErr } = await client.storage
+          .from(PRODUCT_IMAGES_BUCKET)
+          .upload(path, blob, { upsert: true, contentType: blob.type || 'image/png' });
+        if (upErr) throw new Error(upErr.message);
+        setImageUrl(toSafeImageUrl(path));
+      }
     } catch (err) {
       setUploadError(
         err instanceof Error && err.message
@@ -159,6 +181,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       );
     } finally {
       setUploading(false);
+      closeEditor();
     }
   };
 
@@ -375,7 +398,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                 )}
               </div>
             </div>
-            <div className="mt-2.5 flex items-center gap-2.5">
+            <div className="mt-2.5 flex flex-wrap items-center gap-2.5">
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
@@ -387,16 +410,25 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                 ) : (
                   <Upload className="w-4 h-4 text-[#B87932]" />
                 )}
-                <span>{uploading ? 'Mengunggah…' : 'Unggah ke Bucket'}</span>
+                <span>{uploading ? 'Menyimpan…' : 'Unggah / Edit Gambar'}</span>
+              </button>
+              <button
+                type="button"
+                onClick={openEditorForExisting}
+                disabled={!imageUrlValid || uploading}
+                className="min-h-[40px] inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-[#5E3622] bg-white border border-[#2A140B]/15 hover:bg-[#F3ECE2] transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <Pencil className="w-4 h-4 text-[#B87932]" />
+                <span>Edit Gambar</span>
               </button>
               <input
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
                 className="hidden"
-                onChange={handleImageUpload}
+                onChange={handleFilePicked}
               />
-              {imageUrl && (
+              {imageUrl && !imageUrl.startsWith('data:') && (
                 <span className="text-[11px] text-[#5E3622]/60">
                   Tersimpan di bucket{' '}
                   <code className="text-[#B87932]">{PRODUCT_IMAGES_BUCKET}</code>
@@ -472,6 +504,13 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
           </button>
         </div>
       </div>
+
+      <ImageEditorModal
+        open={!!editorSrc}
+        src={editorSrc ?? ''}
+        onClose={closeEditor}
+        onApply={handleEditorApply}
+      />
     </div>
   );
 };
