@@ -11,6 +11,7 @@ import {
   Package,
   Check,
   Menu,
+  AlertTriangle,
 } from 'lucide-react';
 import { Product, ProductCategory } from '../../types';
 import { CATEGORIES, formatRupiah } from '../../data/products';
@@ -27,6 +28,7 @@ import { AdminSidebar, AdminView } from './AdminSidebar';
 import { DashboardOverview } from './DashboardOverview';
 import { ProductActionMenu } from './ProductActionMenu';
 import { resetBodyScroll } from '../../lib/scrollLock';
+import { imageOnError } from '../../lib/imageFallback';
 
 const CATEGORY_IDS = CATEGORIES.map((c) => c.id) as ProductCategory[];
 
@@ -55,8 +57,15 @@ const categoryBadge = (category: string): string => {
 };
 
 export const AdminDashboard: React.FC = () => {
-  const { products, addProduct, updateProduct, deleteProducts, resetToDefault } =
-    useProducts();
+  const {
+    products,
+    addProduct,
+    updateProduct,
+    deleteProducts,
+    resetToDefault,
+    error: mutateError,
+    clearError,
+  } = useProducts();
 
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [adminUser, setAdminUser] = useState('');
@@ -90,6 +99,12 @@ export const AdminDashboard: React.FC = () => {
     const t = setTimeout(() => setToast(null), 2800);
     return () => clearTimeout(t);
   }, [toast]);
+
+  useEffect(() => {
+    if (!mutateError) return;
+    const t = setTimeout(() => clearError(), 6000);
+    return () => clearTimeout(t);
+  }, [mutateError, clearError]);
 
   useEffect(() => {
     setSelection((prev) => {
@@ -164,14 +179,15 @@ export const AdminDashboard: React.FC = () => {
     showToast(`Berhasil masuk sebagai ${username}.`);
   };
 
-  const handleSave = (product: Product) => {
+  const handleSave = async (product: Product) => {
     const exists = products.some((p) => p.id === product.id);
+    let ok: boolean;
     if (exists) {
-      updateProduct(product);
-      showToast('Perubahan produk berhasil disimpan.');
+      ok = await updateProduct(product);
+      if (ok) showToast('Perubahan produk berhasil disimpan.');
     } else {
-      addProduct(product);
-      showToast('Produk baru berhasil ditambahkan.');
+      ok = await addProduct(product);
+      if (ok) showToast('Produk baru berhasil ditambahkan.');
     }
     setIsFormOpen(false);
     setEditingProduct(null);
@@ -191,31 +207,33 @@ export const AdminDashboard: React.FC = () => {
     setIsFormOpen(true);
   };
 
-  const toggleFeatured = (product: Product) => {
-    updateProduct({ ...product, featured: !product.featured });
-    showToast(
-      !product.featured
-        ? `"${product.name}" kini menjadi produk unggulan.`
-        : `"${product.name}" tidak lagi unggulan.`
-    );
+  const toggleFeatured = async (product: Product) => {
+    const ok = await updateProduct({ ...product, featured: !product.featured });
+    if (ok) {
+      showToast(
+        !product.featured
+          ? `"${product.name}" kini menjadi produk unggulan.`
+          : `"${product.name}" tidak lagi unggulan.`
+      );
+    }
   };
 
-  const runConfirm = () => {
+  const runConfirm = async () => {
     if (!confirm) return;
     setActionMenuId(null);
     if (confirm.kind === 'delete-product') {
       const { product } = confirm;
-      deleteProducts([product.id]);
-      showToast(`Produk "${product.name}" berhasil dihapus.`);
+      const ok = await deleteProducts([product.id]);
+      if (ok) showToast(`Produk "${product.name}" berhasil dihapus.`);
     } else if (confirm.kind === 'delete-selected') {
       const ids = Array.from(selection);
-      deleteProducts(ids);
+      const ok = await deleteProducts(ids);
       setSelection(new Set());
-      showToast(`${ids.length} produk berhasil dihapus.`);
+      if (ok) showToast(`${ids.length} produk berhasil dihapus.`);
     } else if (confirm.kind === 'reset') {
-      resetToDefault();
+      const ok = await resetToDefault();
       setSelection(new Set());
-      showToast('Katalog dikembalikan ke data bawaan. Semua perubahan dibersihkan.');
+      if (ok) showToast('Katalog dikembalikan ke data bawaan. Semua perubahan dibersihkan.');
     } else if (confirm.kind === 'logout') {
       try {
         window.sessionStorage.removeItem(ADMIN_SESSION_KEY);
@@ -462,7 +480,7 @@ export const AdminDashboard: React.FC = () => {
                   <div className="flex items-center gap-2.5 min-w-0">
                     <div className="w-10 h-10 rounded-lg overflow-hidden bg-[#F3ECE2] flex-shrink-0">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
+                      <img src={p.imageUrl} alt={p.name} onError={imageOnError} className="w-full h-full object-cover" />
                     </div>
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-[#2A140B] truncate">{p.name}</p>
@@ -534,7 +552,7 @@ export const AdminDashboard: React.FC = () => {
                   />
                   <div className="w-14 h-14 rounded-xl overflow-hidden bg-[#F3ECE2] flex-shrink-0">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
+                    <img src={p.imageUrl} alt={p.name} onError={imageOnError} className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
@@ -671,7 +689,7 @@ export const AdminDashboard: React.FC = () => {
         onCancel={() => setConfirm(null)}
       />
 
-      {/* Toast */}
+      {/* Toast sukses */}
       {toast && (
         <div
           role="status"
@@ -682,6 +700,20 @@ export const AdminDashboard: React.FC = () => {
             <Check className="w-3 h-3" />
           </div>
           <span className="font-medium">{toast}</span>
+        </div>
+      )}
+
+      {/* Toast error mutasi */}
+      {mutateError && (
+        <div
+          role="alert"
+          aria-live="assertive"
+          className="fixed bottom-5 right-5 z-[60] bg-red-700 text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-2.5 text-xs sm:text-sm border border-red-400/40 animate-[admin-toast-in_0.2s_ease-out] max-w-[90vw] sm:max-w-sm"
+        >
+          <div className="w-5 h-5 rounded-full bg-white/20 text-white flex items-center justify-center flex-shrink-0">
+            <AlertTriangle className="w-3 h-3" />
+          </div>
+          <span className="font-medium leading-snug">{mutateError}</span>
         </div>
       )}
     </div>

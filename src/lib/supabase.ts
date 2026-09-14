@@ -49,8 +49,16 @@ export const supabaseAdmin: SupabaseClient | null = (() => {
     return createClient(supabaseUrl, secretKey, {
       auth: { ...authOptions, storageKey: 'malibou-admin-auth' },
     });
-  return supabasePublic;
+  return null;
 })();
+
+/**
+ * Return true only when supabaseAdmin is a *real* service client (not the
+ * anon fallback).  Mutations that bypass RLS MUST use a service client,
+ * otherwise PostgREST silently ignores the write (204 with 0 rows changed).
+ */
+export const isAdminConfigured = (): boolean =>
+  supabaseAdmin !== null && supabaseAdmin !== supabasePublic;
 
 /** URL publik sebuah objek di bucket gambar produk. */
 export const storageImageUrl = (path: string): string =>

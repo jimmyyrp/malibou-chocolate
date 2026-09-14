@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { ArrowRight, Plus } from 'lucide-react';
 import { Product } from '../types';
 import { formatRupiah } from '../data/products';
+import { imageOnError } from '../lib/imageFallback';
 
 interface ProductCardProps {
   product: Product;
@@ -30,6 +31,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           src={product.imageUrl}
           alt={product.name}
           loading="lazy"
+          onError={imageOnError}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-103"
         />
 

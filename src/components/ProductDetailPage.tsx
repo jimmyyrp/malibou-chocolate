@@ -18,6 +18,7 @@ import { useProducts } from '../context/ProductsProvider';
 import { useCart } from '../context/CartProvider';
 import { ProductCard } from './ProductCard';
 import { formatRupiah, OFFICIAL_WHATSAPP_NUMBER } from '../data/products';
+import { imageOnError } from '../lib/imageFallback';
 
 interface ProductDetailPageProps {
   productParam: string;
@@ -136,6 +137,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                 <img
                   src={product.imageUrl}
                   alt={product.name}
+                  onError={imageOnError}
                   className="w-full h-full object-cover"
                 />
                 {product.featured && (
