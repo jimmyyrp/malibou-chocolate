@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { Product } from '../../types';
 import { CATEGORIES, formatRupiah } from '../../data/products';
+import { imageOnError } from '../../lib/imageFallback';
 
 interface DashboardOverviewProps {
   products: Product[];
@@ -239,7 +240,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                 <div key={p.id} className="flex items-center gap-3">
                   <div className="w-11 h-11 rounded-lg overflow-hidden bg-[#F3ECE2] flex-shrink-0">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
+                    <img src={p.imageUrl} alt={p.name} onError={imageOnError} className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs sm:text-sm font-semibold text-[#2A140B] truncate">
@@ -436,7 +437,7 @@ const PriceRangeCard: React.FC<{
     <div className="flex items-center gap-3">
       <div className="w-12 h-12 rounded-lg overflow-hidden bg-[#F3ECE2] flex-shrink-0">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+        <img src={product.imageUrl} alt={product.name} onError={imageOnError} className="w-full h-full object-cover" />
       </div>
       <div className="min-w-0">
         <p className="text-xs font-semibold text-[#2A140B] truncate leading-snug">
