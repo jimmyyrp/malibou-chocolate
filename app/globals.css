@@ -1,7 +1,10 @@
 @import "tailwindcss";
 
 @theme {
-  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  /* Satu keluarga font modern untuk seluruh antarmuka (toko + admin).
+     Heading memakai kelas lama .font-serif / font-serif-luxury namun kini
+     dirender dengan Plus Jakarta Sans agar konsisten dan tanpa font dekoratif. */
+  --font-serif: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   /* Harmonized Luxury Chocolate Palette */
