@@ -1,28 +1,21 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
 import {
   Search,
   Plus,
   Trash2,
   Pencil,
-  LogOut,
-  Store,
   RefreshCw,
   X,
   Star,
   Package,
-  Tags,
-  Coins,
   Check,
-  LayoutDashboard,
-  ShieldCheck,
+  Menu,
 } from 'lucide-react';
 import { Product, ProductCategory } from '../../types';
 import { CATEGORIES, formatRupiah } from '../../data/products';
 import { useProducts } from '../../context/ProductsProvider';
-import { MalibouLogo } from '../MalibouLogo';
 import {
   ADMIN_SESSION_KEY,
   ADMIN_SESSION_VALUE,
@@ -31,6 +24,8 @@ import {
 import { LoginScreen } from './LoginScreen';
 import { ProductFormModal } from './ProductFormModal';
 import { DualConfirmModal } from './DualConfirmModal';
+import { AdminSidebar, AdminView } from './AdminSidebar';
+import { DashboardOverview } from './DashboardOverview';
 
 const CATEGORY_IDS = CATEGORIES.map((c) => c.id) as ProductCategory[];
 
@@ -73,6 +68,8 @@ export const AdminDashboard: React.FC = () => {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [confirm, setConfirm] = useState<ConfirmState>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [view, setView] = useState<AdminView>('dashboard');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -122,16 +119,6 @@ export const AdminDashboard: React.FC = () => {
     }
     return result;
   }, [products, search, categoryFilter, sortBy]);
-
-  const stats = useMemo(() => {
-    const categories = new Set(products.map((p) => p.category)).size;
-    const featured = products.filter((p) => p.featured).length;
-    const avgPrice =
-      products.length > 0
-        ? Math.round(products.reduce((s, p) => s + p.price, 0) / products.length)
-        : 0;
-    return { total: products.length, categories, featured, avgPrice };
-  }, [products]);
 
   const allVisibleSelected =
     filtered.length > 0 && filtered.every((p) => selection.has(p.id));
@@ -232,6 +219,8 @@ export const AdminDashboard: React.FC = () => {
       setSelection(new Set());
       setSearch('');
       setCategoryFilter('all');
+      setView('dashboard');
+      setSidebarOpen(false);
       showToast('Anda telah keluar dari dashboard.');
     }
     setConfirm(null);
@@ -256,53 +245,61 @@ export const AdminDashboard: React.FC = () => {
 
   // ---------- Dashboard ----------
   return (
-    <div className="min-h-screen bg-[#F7F1E7] text-[#2A140B]">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-[#FAF7F2]/95 backdrop-blur-md border-b border-[#2A140B]/8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-[72px] flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <MalibouLogo size="sm" hideSubOnMobile />
-            <span className="hidden md:inline-flex items-center gap-1.5 pl-2.5 border-l border-[#2A140B]/10 text-[#B87932] text-[11px] font-semibold tracking-[0.18em] uppercase">
-              <LayoutDashboard className="w-3.5 h-3.5" />
-              Dashboard
-            </span>
-            {adminUser && (
-              <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#B87932]/10 text-[#7E4A30] text-[11px] font-semibold">
-                <ShieldCheck className="w-3 h-3 text-[#B87932]" />
-                {adminUser}
-              </span>
-            )}
+    <div className="min-h-screen bg-[#F7F1E7] text-[#2A140B] lg:pl-64">
+      <AdminSidebar
+        view={view}
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        onNavigate={setView}
+        onLogout={() => setConfirm({ kind: 'logout' })}
+        adminUser={adminUser}
+        totalProducts={products.length}
+      />
+
+      <div className="flex flex-col min-h-screen">
+        {/* Topbar */}
+        <header className="sticky top-0 z-30 bg-[#FAF7F2]/95 backdrop-blur-md border-b border-[#2A140B]/8">
+          <div className="flex items-center justify-between gap-3 px-4 sm:px-6 lg:px-8 h-14 sm:h-16">
+            <div className="flex items-center gap-3 min-w-0">
+              <button
+                onClick={() => setSidebarOpen(true)}
+                aria-label="Buka menu"
+                className="lg:hidden p-1.5 -ml-1.5 rounded-lg text-[#5E3622] hover:text-[#2A140B] hover:bg-[#F3ECE2] transition-colors cursor-pointer"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+              <h1 className="font-serif text-base sm:text-lg font-bold text-[#2A140B] truncate">
+                {view === 'dashboard' ? 'Ringkasan Dashboard' : 'Katalog Produk'}
+              </h1>
+            </div>
+            <div className="flex items-center gap-2">
+              {view === 'products' && (
+                <button
+                  onClick={openAdd}
+                  className="lg:hidden inline-flex items-center gap-1.5 min-h-[36px] px-3 py-2 rounded-xl text-xs font-semibold text-white bg-[#2A140B] hover:bg-[#3A1F14] transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5 text-[#C58B47]" />
+                  <span>Tambah</span>
+                </button>
+              )}
+            </div>
           </div>
+        </header>
 
-          <div className="flex items-center gap-2">
-            <Link
-              href="/"
-              className="hidden sm:inline-flex items-center gap-1.5 min-h-[40px] px-3.5 py-2 rounded-xl text-xs font-semibold text-[#5E3622] hover:text-[#2A140B] bg-[#F3ECE2] hover:bg-[#EAE2D5] transition-colors"
-            >
-              <Store className="w-3.5 h-3.5" />
-              <span>Lihat Toko</span>
-            </Link>
-            <button
-              onClick={() => setConfirm({ kind: 'logout' })}
-              className="inline-flex items-center gap-1.5 min-h-[40px] px-3.5 py-2 rounded-xl text-xs font-semibold text-white bg-[#2A140B] hover:bg-[#3A1F14] transition-colors"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Keluar</span>
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        {/* Stat Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
-          <StatCard icon={<Package className="w-4 h-4" />} label="Total Produk" value={String(stats.total)} />
-          <StatCard icon={<Tags className="w-4 h-4" />} label="Kategori Terisi" value={String(stats.categories)} />
-          <StatCard icon={<Star className="w-4 h-4" />} label="Produk Unggulan" value={String(stats.featured)} />
-          <StatCard icon={<Coins className="w-4 h-4" />} label="Rata-rata Harga" value={formatRupiah(stats.avgPrice)} />
-        </div>
-
-        {/* Toolbar */}
+        <main className="flex-1 w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+          {view === 'dashboard' ? (
+            <DashboardOverview
+              products={products}
+              adminUser={adminUser}
+              onManageProducts={() => setView('products')}
+              onAddProduct={() => {
+                setView('products');
+                openAdd();
+              }}
+            />
+          ) : (
+            <>
+              {/* Toolbar */}
         <div className="flex flex-col lg:flex-row lg:items-center gap-3 mb-4">
           <div className="flex flex-1 gap-2.5 flex-wrap">
             <div className="relative flex-1 min-w-[200px]">
@@ -597,7 +594,10 @@ export const AdminDashboard: React.FC = () => {
             />
           )}
         </div>
-      </main>
+            </>
+          )}
+        </main>
+      </div>
 
       {/* Modals */}
       <ProductFormModal
@@ -682,26 +682,6 @@ export const AdminDashboard: React.FC = () => {
     </div>
   );
 };
-
-const StatCard: React.FC<{ icon: React.ReactNode; label: string; value: string }> = ({
-  icon,
-  label,
-  value,
-}) => (
-  <div className="bg-white rounded-2xl border border-[#2A140B]/10 p-4 flex items-center gap-3 shadow-xs">
-    <div className="w-10 h-10 rounded-xl bg-[#F3ECE2] text-[#B87932] flex items-center justify-center flex-shrink-0">
-      {icon}
-    </div>
-    <div className="min-w-0">
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-[#5E3622]/70 truncate">
-        {label}
-      </p>
-      <p className="font-serif font-bold text-lg text-[#2A140B] truncate" title={value}>
-        {value}
-      </p>
-    </div>
-  </div>
-);
 
 const EmptyState: React.FC<{ title: string; subtitle: string }> = ({ title, subtitle }) => (
   <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
