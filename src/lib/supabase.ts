@@ -26,12 +26,29 @@ export const PRODUCT_IMAGES_BUCKET = 'product-images';
 export const isSupabaseConfigured = (): boolean =>
   Boolean(supabaseUrl && publishableKey);
 
+/**
+ * Opsi auth sengaja dimatikan: aplikasi tidak memakai Supabase Auth,
+ * hanya storage/katalog. `storageKey` dibedakan per klien agar
+ * tidak muncul peringatan "Multiple GoTrueClient instances" (protokol
+ * tidak boleh berbagi storage key auth yang sama di satu peramban).
+ */
+const authOptions = {
+  persistSession: false,
+  autoRefreshToken: false,
+  detectSessionInUrl: false,
+} as const;
+
 export const supabasePublic: SupabaseClient | null = isSupabaseConfigured()
-  ? createClient(supabaseUrl, publishableKey)
+  ? createClient(supabaseUrl, publishableKey, {
+      auth: { ...authOptions, storageKey: 'malibou-public-auth' },
+    })
   : null;
 
 export const supabaseAdmin: SupabaseClient | null = (() => {
-  if (supabaseUrl && secretKey) return createClient(supabaseUrl, secretKey);
+  if (supabaseUrl && secretKey)
+    return createClient(supabaseUrl, secretKey, {
+      auth: { ...authOptions, storageKey: 'malibou-admin-auth' },
+    });
   return supabasePublic;
 })();
 

@@ -5,7 +5,6 @@ import {
   Search,
   Plus,
   Trash2,
-  Pencil,
   RefreshCw,
   X,
   Star,
@@ -26,6 +25,7 @@ import { ProductFormModal } from './ProductFormModal';
 import { DualConfirmModal } from './DualConfirmModal';
 import { AdminSidebar, AdminView } from './AdminSidebar';
 import { DashboardOverview } from './DashboardOverview';
+import { ProductActionMenu } from './ProductActionMenu';
 
 const CATEGORY_IDS = CATEGORIES.map((c) => c.id) as ProductCategory[];
 
@@ -70,6 +70,7 @@ export const AdminDashboard: React.FC = () => {
   const [toast, setToast] = useState<string | null>(null);
   const [view, setView] = useState<AdminView>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [actionMenuId, setActionMenuId] = useState<number | null>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -172,12 +173,14 @@ export const AdminDashboard: React.FC = () => {
   };
 
   const openAdd = () => {
+    setActionMenuId(null);
     setEditingProduct(null);
     setDefaultCategory(categoryFilter !== 'all' ? categoryFilter : 'chocolate-bar');
     setIsFormOpen(true);
   };
 
   const openEdit = (product: Product) => {
+    setActionMenuId(null);
     setEditingProduct(product);
     setDefaultCategory(product.category);
     setIsFormOpen(true);
@@ -194,6 +197,7 @@ export const AdminDashboard: React.FC = () => {
 
   const runConfirm = () => {
     if (!confirm) return;
+    setActionMenuId(null);
     if (confirm.kind === 'delete-product') {
       const { product } = confirm;
       deleteProducts([product.id]);
@@ -259,7 +263,7 @@ export const AdminDashboard: React.FC = () => {
       <div className="flex flex-col min-h-screen">
         {/* Topbar */}
         <header className="sticky top-0 z-30 bg-[#FAF7F2]/95 backdrop-blur-md border-b border-[#2A140B]/8">
-          <div className="flex items-center justify-between gap-3 px-4 sm:px-6 lg:px-8 h-14 sm:h-16">
+          <div className="flex items-center justify-between gap-3 px-4 sm:px-6 lg:px-8 h-16 sm:h-[72px]">
             <div className="flex items-center gap-3 min-w-0">
               <button
                 onClick={() => setSidebarOpen(true)}
@@ -300,8 +304,8 @@ export const AdminDashboard: React.FC = () => {
           ) : (
             <>
               <div className="max-w-[1000px]">
-              {/* Toolbar */}
-        <div className="flex flex-col lg:flex-row lg:items-center gap-3 mb-4">
+                {/* Toolbar */}
+                <div className="flex flex-col lg:flex-row lg:items-center gap-3 mb-4">
           <div className="flex flex-1 gap-2.5 flex-wrap">
             <div className="relative flex-1 min-w-[200px]">
               <Search className="w-3.5 h-3.5 text-[#5E3622]/60 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -417,7 +421,7 @@ export const AdminDashboard: React.FC = () => {
 
         {/* ---------- Desktop Table ---------- */}
         <div className="hidden lg:block bg-white rounded-2xl border border-[#2A140B]/10 shadow-xs overflow-x-auto">
-          <div className="grid grid-cols-[28px_minmax(180px,1.4fr)_112px_92px_64px_104px] items-center gap-2 px-3 min-w-[600px] py-2.5 bg-[#F3ECE2]/70 border-b border-[#2A140B]/8 text-[10px] font-semibold uppercase tracking-wider text-[#5E3622]/80 whitespace-nowrap">
+          <div className="grid grid-cols-[28px_minmax(180px,1.4fr)_112px_92px_64px_48px] items-center gap-2 px-3 min-w-[600px] py-2.5 bg-[#F3ECE2]/70 border-b border-[#2A140B]/8 text-[10px] font-semibold uppercase tracking-wider text-[#5E3622]/80 whitespace-nowrap">
             <div className="flex items-center">
               <input
                 type="checkbox"
@@ -439,7 +443,7 @@ export const AdminDashboard: React.FC = () => {
               return (
                 <div
                   key={p.id}
-                  className={`grid grid-cols-[28px_minmax(180px,1.4fr)_112px_92px_64px_104px] items-center gap-2 px-3 min-w-[600px] py-2.5 border-b border-[#2A140B]/6 last:border-b-0 transition-colors ${
+                  className={`grid grid-cols-[28px_minmax(180px,1.4fr)_112px_92px_64px_48px] items-center gap-2 px-3 min-w-[600px] py-2.5 border-b border-[#2A140B]/6 last:border-b-0 transition-colors ${
                     selection.has(p.id) ? 'bg-[#B87932]/8' : 'hover:bg-[#FAF7F2]'
                   }`}
                 >
@@ -481,21 +485,18 @@ export const AdminDashboard: React.FC = () => {
                   >
                     <Star className={`w-4 h-4 ${p.featured ? 'fill-current' : ''}`} />
                   </button>
-                  <div className="flex items-center justify-end gap-1.5">
-                    <button
-                      onClick={() => openEdit(p)}
-                      aria-label={`Edit ${p.name}`}
-                      className="w-8 h-8 rounded-lg flex items-center justify-center text-[#5E3622] hover:text-[#2A140B] bg-[#F3ECE2] hover:bg-[#EAE2D5] transition-colors cursor-pointer"
-                    >
-                      <Pencil className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => setConfirm({ kind: 'delete-product', product: p })}
-                      aria-label={`Hapus ${p.name}`}
-                      className="w-8 h-8 rounded-lg flex items-center justify-center text-red-600 hover:text-white bg-red-50 hover:bg-red-600 transition-colors cursor-pointer"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                  <div className="flex items-center justify-end">
+                    <ProductActionMenu
+                      open={actionMenuId === p.id}
+                      onOpen={() => setActionMenuId(p.id)}
+                      onClose={() => setActionMenuId(null)}
+                      product={p}
+                      onEdit={() => openEdit(p)}
+                      onDelete={() =>
+                        setConfirm({ kind: 'delete-product', product: p })
+                      }
+                      onToggleFeatured={() => toggleFeatured(p)}
+                    />
                   </div>
                 </div>
               );
@@ -571,22 +572,17 @@ export const AdminDashboard: React.FC = () => {
                   <span className="font-serif font-bold text-base text-[#2A140B]">
                     {formatRupiah(p.price)}
                   </span>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => openEdit(p)}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-[#2A140B] bg-[#F3ECE2] hover:bg-[#EAE2D5] transition-colors"
-                    >
-                      <Pencil className="w-3 h-3" />
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => setConfirm({ kind: 'delete-product', product: p })}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 transition-colors"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                      Hapus
-                    </button>
-                  </div>
+                  <ProductActionMenu
+                    open={actionMenuId === p.id}
+                    onOpen={() => setActionMenuId(p.id)}
+                    onClose={() => setActionMenuId(null)}
+                    product={p}
+                    onEdit={() => openEdit(p)}
+                    onDelete={() =>
+                      setConfirm({ kind: 'delete-product', product: p })
+                    }
+                    onToggleFeatured={() => toggleFeatured(p)}
+                  />
                 </div>
               </div>
             ))

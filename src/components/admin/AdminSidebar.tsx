@@ -63,7 +63,6 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
           onClick={() => handleNavigate('dashboard')}
           icon={<LayoutDashboard className="w-4 h-4" />}
           label="Dashboard"
-          badge="Ringkasan"
         />
         <SidebarNavItem
           active={view === 'products'}
@@ -137,7 +136,7 @@ const SidebarNavItem: React.FC<{
   onClick: () => void;
   icon: React.ReactNode;
   label: string;
-  badge: string;
+  badge?: string;
 }> = ({ active, onClick, icon, label, badge }) => (
   <button
     onClick={onClick}
@@ -150,12 +149,14 @@ const SidebarNavItem: React.FC<{
   >
     <span className={active ? 'text-[#B87932]' : 'text-[#B87932]/70'}>{icon}</span>
     <span className="flex-1 text-left">{label}</span>
-    <span
-      className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-        active ? 'bg-[#B87932]/15 text-[#7E4A30]' : 'bg-[#F3ECE2] text-[#5E3622]/60'
-      }`}
-    >
-      {badge}
-    </span>
+    {badge !== undefined && (
+      <span
+        className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+          active ? 'bg-[#B87932]/15 text-[#7E4A30]' : 'bg-[#F3ECE2] text-[#5E3622]/60'
+        }`}
+      >
+        {badge}
+      </span>
+    )}
   </button>
 );
