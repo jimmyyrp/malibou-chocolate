@@ -12,9 +12,8 @@ import React, {
 import { Product, ProductCategory } from '../types';
 import { CATEGORIES, PRODUCTS } from '../data/products';
 import {
+  adminApi,
   isSupabaseConfigured,
-  isAdminConfigured,
-  supabaseAdmin,
   supabasePublic,
 } from '../lib/supabase';
 
@@ -185,77 +184,38 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  // Jika konfigurasi Supabase tidak ada, tidak ada tulis; semua operasi
-  // mutasi hanya mengubah state lokal (perilaku lama via state).
-  const getDb = () => {
-    if (!isSupabaseConfigured() || !supabaseAdmin) return null;
-    return supabaseAdmin;
-  };
-
+  // Semua operasi tulis diarahkan ke API route server-side agar secret key
+  // Supabase tidak pernah masuk ke bundle browser. Bila server tidak
+  // terjangkau / belum dikonfigurasi, mutasi hanya mengubah state lokal.
   const save = useCallback((next: Product[]): Promise<boolean> => {
     setProducts(next);
-    const db = getDb();
-    if (!db) {
-      if (isSupabaseConfigured() && !isAdminConfigured()) {
-        setError('Secret key belum dikonfigurasi — perubahan hanya disimpan di peramban ini. Set env NEXT_PUBLIC_SUPABASE_SECRET_KEY lalu rebuild.');
-      }
-      return Promise.resolve(false);
-    }
+    if (!isSupabaseConfigured()) return Promise.resolve(false);
     return (async () => {
-      try {
-        const { error: upsertErr } = await db
-          .from('products')
-          .upsert(
-            next.map((p) => productToRow(p, catMapsRef.current)),
-            { onConflict: 'id' }
-          );
-        if (upsertErr) throw upsertErr;
-        const { data, error: selErr } = await db.from('products').select('id');
-        if (selErr) throw selErr;
-        const keep = new Set(next.map((p) => p.id));
-        const extras = (data ?? [])
-          .map((r) => (r as { id: number }).id)
-          .filter((id) => !keep.has(id));
-        if (extras.length > 0) {
-          const { error: delErr } = await db.from('products').delete().in('id', extras);
-          if (delErr) throw delErr;
-        }
-        return true;
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        setError(`Gagal menyimpan katalog ke Supabase: ${msg}`);
-        console.error('Gagal menyimpan katalog ke Supabase:', err);
+      const res = await adminApi.saveAll(
+        next.map((p) => productToRow(p, catMapsRef.current))
+      );
+      if (!res.ok) {
+        setError(`Gagal menyimpan katalog ke Supabase: ${res.error}`);
+        console.error('Gagal menyimpan katalog ke Supabase:', res.error);
         return false;
       }
+      return true;
     })();
   }, []);
 
   const addProduct = useCallback((product: Product): Promise<boolean> => {
     setProducts((prev) => [...prev, product]);
-    const db = getDb();
-    if (!db) {
-      if (isSupabaseConfigured() && !isAdminConfigured()) {
-        setError('Secret key belum dikonfigurasi — produk hanya ditambahkan di peramban ini.');
-      }
-      return Promise.resolve(false);
-    }
+    if (!isSupabaseConfigured()) return Promise.resolve(false);
     return (async () => {
-      try {
-        const { error: writeErr } = await db
-          .from('products')
-          .insert(productToRow(product, catMapsRef.current));
-        if (writeErr) {
-          setError(`Gagal menambah produk ke Supabase: ${writeErr.message}`);
-          console.error('Gagal menambah produk ke Supabase:', writeErr.message);
-          return false;
-        }
-        return true;
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        setError(`Gagal menambah produk ke Supabase: ${msg}`);
-        console.error('Gagal menambah produk ke Supabase:', err);
+      const res = await adminApi.add(
+        productToRow(product, catMapsRef.current)
+      );
+      if (!res.ok) {
+        setError(`Gagal menambah produk ke Supabase: ${res.error}`);
+        console.error('Gagal menambah produk ke Supabase:', res.error);
         return false;
       }
+      return true;
     })();
   }, []);
 
@@ -263,97 +223,51 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
     setProducts((prev) =>
       prev.map((p) => (p.id === product.id ? product : p))
     );
-    const db = getDb();
-    if (!db) {
-      if (isSupabaseConfigured() && !isAdminConfigured()) {
-        setError('Secret key belum dikonfigurasi — perubahan produk hanya disimpan di peramban ini.');
-      }
-      return Promise.resolve(false);
-    }
+    if (!isSupabaseConfigured()) return Promise.resolve(false);
     return (async () => {
-      try {
-        const { error: writeErr } = await db
-          .from('products')
-          .update(productToRow(product, catMapsRef.current))
-          .eq('id', product.id);
-        if (writeErr) {
-          setError(`Gagal memperbarui produk di Supabase: ${writeErr.message}`);
-          console.error('Gagal memperbarui produk di Supabase:', writeErr.message);
-          return false;
-        }
-        return true;
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        setError(`Gagal memperbarui produk di Supabase: ${msg}`);
-        console.error('Gagal memperbarui produk di Supabase:', err);
+      const res = await adminApi.update(
+        product.id,
+        productToRow(product, catMapsRef.current)
+      );
+      if (!res.ok) {
+        setError(`Gagal memperbarui produk di Supabase: ${res.error}`);
+        console.error('Gagal memperbarui produk di Supabase:', res.error);
         return false;
       }
+      return true;
     })();
   }, []);
 
   const deleteProducts = useCallback((ids: number[]): Promise<boolean> => {
     const idSet = new Set(ids);
     setProducts((prev) => prev.filter((p) => !idSet.has(p.id)));
-    const db = getDb();
-    if (!db || ids.length === 0) {
-      if (ids.length > 0 && isSupabaseConfigured() && !isAdminConfigured()) {
-        setError('Secret key belum dikonfigurasi — penghapusan hanya berlaku di peramban ini.');
-      }
+    if (!isSupabaseConfigured() || ids.length === 0) {
       return Promise.resolve(false);
     }
     return (async () => {
-      try {
-        const { error: writeErr } = await db.from('products').delete().in('id', ids);
-        if (writeErr) {
-          setError(`Gagal menghapus produk di Supabase: ${writeErr.message}`);
-          console.error('Gagal menghapus produk di Supabase:', writeErr.message);
-          return false;
-        }
-        return true;
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        setError(`Gagal menghapus produk di Supabase: ${msg}`);
-        console.error('Gagal menghapus produk di Supabase:', err);
+      const res = await adminApi.remove(ids);
+      if (!res.ok) {
+        setError(`Gagal menghapus produk di Supabase: ${res.error}`);
+        console.error('Gagal menghapus produk di Supabase:', res.error);
         return false;
       }
+      return true;
     })();
   }, []);
 
   const resetToDefault = useCallback((): Promise<boolean> => {
     setProducts(PRODUCTS);
-    const db = getDb();
-    if (!db) {
-      if (isSupabaseConfigured() && !isAdminConfigured()) {
-        setError('Secret key belum dikonfigurasi — reset hanya berlaku di peramban ini.');
-      }
-      return Promise.resolve(false);
-    }
+    if (!isSupabaseConfigured()) return Promise.resolve(false);
     return (async () => {
-      try {
-        const defaultIds = new Set(PRODUCTS.map((p) => p.id));
-        const { error: upsertErr } = await db
-          .from('products')
-          .upsert(
-            [...PRODUCTS].map((p) => productToRow(p, catMapsRef.current)),
-            { onConflict: 'id' }
-          );
-        if (upsertErr) throw upsertErr;
-        const { data, error: selErr } = await db.from('products').select('id');
-        if (selErr) throw selErr;
-        const extras = (data ?? [])
-          .map((r) => (r as { id: number }).id)
-          .filter((id) => !defaultIds.has(id));
-        if (extras.length > 0) {
-          const { error: delErr } = await db.from('products').delete().in('id', extras);
-          if (delErr) throw delErr;
-        }
-        return true;
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        setError(`Gagal mereset katalog di Supabase: ${msg}`);
-        console.error('Gagal mereset katalog di Supabase:', err);
+      const res = await adminApi.saveAll(
+        [...PRODUCTS].map((p) => productToRow(p, catMapsRef.current))
+      );
+      if (!res.ok) {
+        setError(`Gagal mereset katalog di Supabase: ${res.error}`);
+        console.error('Gagal mereset katalog di Supabase:', res.error);
         return false;
       }
+      return true;
     })();
   }, []);
 

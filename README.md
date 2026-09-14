@@ -41,7 +41,7 @@ Stack: **Next.js 16** (static export) · React 19 · Tailwind CSS 4 ·
 | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL` | URL project Supabase (`https://<ref>.supabase.co`) |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Key publik/anon. Dipakai browser untuk membaca katalog. |
-| `NEXT_PUBLIC_SUPABASE_SECRET_KEY` | Key secret/service. Dipakai dashboard admin untuk CRUD katalog & verifikasi login. |
+| `SUPABASE_SECRET_KEY` | Key secret/service. **Server-side only** (API routes `/api/admin/*`). Jangan beri prefix `NEXT_PUBLIC_`. |
 | `DATABASE_URL` | Koneksi PostgreSQL untuk **migration runner**. Tidak pernah masuk ke kode browser (bukan `NEXT_PUBLIC_`). |
 
 > Karakter khusus pada password database harus di-URL-encode
@@ -97,18 +97,21 @@ RLS, akun admin (`users`), dan uji akses REST memakai key publishable.
 ## Arsitektur Data (Aplikasi ↔ Supabase)
 
 - Storefront membaca katalog dari `products` lewat key publishable.
-- Dashboard admin (`/admin`) memakai secret key untuk:
+- Dashboard admin (`/admin`) melakukan semua operasi tulis lewat
+  **API route server-side** (`/api/admin/products/*`, `/api/admin/storage`)
+  yang memakai secret key di server untuk:
   - verifikasi login terhadap `users` (bcrypt),
   - insert/update/delete produk. Perubahan admin langsung tersimpan di
     database dan tampil di semua perangkat.
 - Pemesanan diteruskan ke WhatsApp (`wa.me/<no official>`); tidak ada
   penyimpanan pesanan di database.
 
-**Catatan keamanan**: aplikasi ini static export (tanpa server), sehingga
-`NEXT_PUBLIC_SUPABASE_SECRET_KEY` ikut tertanam di bundle browser. Key ini
-hanya mengelola katalog produk publik dan tabel `users` (login admin).
-Jika data yang dikelola mulai sensitif, pindahkan operasi admin ke server
-(misal Supabase Functions + Supabase Auth).
+**Catatan keamanan**: aplikasi berjalan sebagai server app (`next start`),
+bukan static export. Secret key hanya dipegang server (env `SUPABASE_SECRET_KEY`,
+tanpa prefix `NEXT_PUBLIC_`), sehingga **tidak pernah masuk ke bundle
+browser**. Supabase memblokir secret key yang dipakai dari browser
+(`403 Forbidden use of secret API key in browser`) — semua mutasi katalog
+harus melewati API route.
 
 ---
 

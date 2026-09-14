@@ -61,12 +61,14 @@ async function main() {
   };
   const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
   const secretKey =
+    env.SUPABASE_SECRET_KEY ||
+    process.env.SUPABASE_SECRET_KEY ||
     env.NEXT_PUBLIC_SUPABASE_SECRET_KEY ||
     process.env.NEXT_PUBLIC_SUPABASE_SECRET_KEY;
 
   if (!supabaseUrl || !secretKey) {
     console.error(
-      'ERROR: NEXT_PUBLIC_SUPABASE_URL dan NEXT_PUBLIC_SUPABASE_SECRET_KEY ' +
+      'ERROR: NEXT_PUBLIC_SUPABASE_URL dan SUPABASE_SECRET_KEY ' +
         'harus ada di .env/.env.local (lihat .env.example).'
     );
     process.exit(1);

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import bcrypt from 'bcryptjs';
+import {
+  getSupabaseAdmin,
+  isServerSupabaseConfigured,
+} from '@/lib/supabaseServer';
 
 export const runtime = 'nodejs';
 
@@ -30,9 +33,8 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
-  const secretKey = process.env.NEXT_PUBLIC_SUPABASE_SECRET_KEY?.trim();
-  if (!url || !secretKey) {
+  const supabase = getSupabaseAdmin();
+  if (!isServerSupabaseConfigured() || !supabase) {
     return NextResponse.json(
       { error: 'Server tidak memiliki kredensial database.' },
       { status: 500 }
@@ -40,10 +42,6 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const supabase = createClient(url, secretKey, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
-
     const { data, error } = await supabase
       .from('users')
       .select('id, username, display_name, role, password_hash, is_active')

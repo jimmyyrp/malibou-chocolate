@@ -10,8 +10,6 @@ import { ImageEditorModal } from './ImageEditorModal';
 import { lockBodyScroll, unlockBodyScroll } from '../../lib/scrollLock';
 import {
   PRODUCT_IMAGES_BUCKET,
-  supabaseAdmin,
-  supabasePublic,
   toSafeImageUrl,
 } from '../../lib/supabase';
 
@@ -166,25 +164,42 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     setUploading(true);
     setUploadError(null);
     try {
-      const client = supabaseAdmin ?? supabasePublic;
-      if (!client) {
+      const blob = await (await fetch(dataUrl)).blob();
+      const cleanName = (name.trim() || 'produk')
+        .replace(/[^a-zA-Z0-9_-]+/g, '-')
+        .toLowerCase()
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 60);
+      const isPng = dataUrl.startsWith('data:image/png');
+      const ext = isPng ? 'png' : 'jpg';
+      const path = `products/${cleanName}-${Date.now()}.${ext}`;
+
+      const form = new FormData();
+      form.append('file', blob, path);
+      form.append('path', path);
+      form.append('upsert', '1');
+
+      let res: Response;
+      try {
+        res = await fetch('/api/admin/storage', {
+          method: 'POST',
+          body: form,
+        });
+      } catch {
         setImageUrl(dataUrl);
-      } else {
-        const blob = await (await fetch(dataUrl)).blob();
-        const cleanName = (name.trim() || 'produk')
-          .replace(/[^a-zA-Z0-9_-]+/g, '-')
-          .toLowerCase()
-          .replace(/^-+|-+$/g, '')
-          .slice(0, 60);
-        const isPng = dataUrl.startsWith('data:image/png');
-        const ext = isPng ? 'png' : 'jpg';
-        const path = `products/${cleanName}-${Date.now()}.${ext}`;
-        const { error: upErr } = await client.storage
-          .from(PRODUCT_IMAGES_BUCKET)
-          .upload(path, blob, { upsert: true, contentType: blob.type || 'image/png' });
-        if (upErr) throw new Error(upErr.message);
-        setImageUrl(toSafeImageUrl(path));
+        setUploadError(null);
+        closeEditor();
+        return;
       }
+
+      const body = await res.json().catch(() => null);
+      if (!res.ok) {
+        throw new Error(
+          (body && typeof body.error === 'string' && body.error) ||
+            `Gagal mengunggah (HTTP ${res.status})`
+        );
+      }
+      setImageUrl(toSafeImageUrl(path));
     } catch (err) {
       setUploadError(
         err instanceof Error && err.message
