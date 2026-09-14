@@ -19,6 +19,7 @@ import {
 interface ImageEditorModalProps {
   open: boolean;
   src: string;
+  sourceLabel?: string;
   onClose: () => void;
   onApply: (dataUrl: string, dims: { width: number; height: number }) => void;
 }
@@ -217,6 +218,7 @@ function resizeRect(
 export const ImageEditorModal: React.FC<ImageEditorModalProps> = ({
   open,
   src,
+  sourceLabel,
   onClose,
   onApply,
 }) => {
@@ -655,8 +657,9 @@ export const ImageEditorModal: React.FC<ImageEditorModalProps> = ({
               <h2 id="image-editor-title" className="font-serif text-base font-bold text-[#2A140B]">
                 Edit Gambar
               </h2>
-              <p className="text-[11px] text-[#5E3622]/70">
-                Crop, putar, dan ubah ukuran — hasil otomatis diunggah lagi.
+              <p className="text-[11px] text-[#5E3622]/70 truncate max-w-[420px]">
+                Menyunting untuk "{sourceLabel}" — hasil diunggah otomatis setelah
+                dikonfirmasi.
               </p>
             </div>
           </div>
@@ -857,7 +860,8 @@ export const ImageEditorModal: React.FC<ImageEditorModalProps> = ({
         {/* Footer */}
         <div className="px-5 py-4 border-t border-[#2A140B]/8 bg-white flex items-center justify-between gap-3">
           <p className="hidden sm:block text-[11px] text-[#5E3622]/60">
-            Seret area untuk memindah · sisi/gagang untuk mengatur ukuran · roda untuk zoom.
+            Seret area = pindah · gagang/sisi = atur ukuran · roda = zoom. Klik
+            "Terapkan & Simpan" untuk mengunggah hasilnya.
           </p>
           <div className="flex items-center gap-2.5 ml-auto">
             <button

@@ -126,8 +126,20 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       return;
     }
 
+    if (file.size > 25 * 1024 * 1024) {
+      setUploadError('Ukuran berkas melebihi 25 MB. Pilih gambar yang lebih kecil lalu coba lagi.');
+      return;
+    }
+
+    let objectUrl: string;
+    try {
+      objectUrl = URL.createObjectURL(file);
+    } catch {
+      setUploadError('Gagal membaca berkas di peramban ini. Coba gambar lain.');
+      return;
+    }
+
     if (editorObjUrlRef.current) URL.revokeObjectURL(editorObjUrlRef.current);
-    const objectUrl = URL.createObjectURL(file);
     editorObjUrlRef.current = objectUrl;
     setUploadError(null);
     setEditorSrc(objectUrl);
@@ -435,6 +447,11 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                 </span>
               )}
             </div>
+            <p className="mt-2 text-[11px] text-[#5E3622]/60">
+              File yang dipilih otomatis dibuka di{' '}
+              <strong className="text-[#2A140B]">canvas editor</strong> (crop, putar,
+              ubah ukuran) sebelum disimpan.
+            </p>
             {uploadError && (
               <p role="alert" className="mt-1.5 text-xs font-medium text-red-600">
                 {uploadError}
@@ -508,6 +525,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       <ImageEditorModal
         open={!!editorSrc}
         src={editorSrc ?? ''}
+        sourceLabel={name.trim() || 'gambar produk'}
         onClose={closeEditor}
         onApply={handleEditorApply}
       />
