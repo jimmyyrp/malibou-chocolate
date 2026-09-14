@@ -299,6 +299,7 @@ export const AdminDashboard: React.FC = () => {
             />
           ) : (
             <>
+              <div className="max-w-[1000px]">
               {/* Toolbar */}
         <div className="flex flex-col lg:flex-row lg:items-center gap-3 mb-4">
           <div className="flex flex-1 gap-2.5 flex-wrap">
@@ -415,8 +416,8 @@ export const AdminDashboard: React.FC = () => {
         </div>
 
         {/* ---------- Desktop Table ---------- */}
-        <div className="hidden lg:block bg-white rounded-2xl border border-[#2A140B]/10 shadow-xs overflow-hidden">
-          <div className="grid grid-cols-[40px_minmax(240px,1.5fr)_140px_110px_80px_120px_90px_140px] items-center gap-3 px-4 py-3 bg-[#F3ECE2]/70 border-b border-[#2A140B]/8 text-[10px] font-semibold uppercase tracking-wider text-[#5E3622]/80">
+        <div className="hidden lg:block bg-white rounded-2xl border border-[#2A140B]/10 shadow-xs overflow-x-auto">
+          <div className="grid grid-cols-[28px_minmax(180px,1.4fr)_112px_92px_64px_104px] items-center gap-2 px-3 min-w-[600px] py-2.5 bg-[#F3ECE2]/70 border-b border-[#2A140B]/8 text-[10px] font-semibold uppercase tracking-wider text-[#5E3622]/80 whitespace-nowrap">
             <div className="flex items-center">
               <input
                 type="checkbox"
@@ -429,74 +430,76 @@ export const AdminDashboard: React.FC = () => {
             <span>Produk</span>
             <span>Kategori</span>
             <span>Harga</span>
-            <span>Satuan</span>
-            <span>Kemasan</span>
             <span>Unggulan</span>
             <span className="text-right">Aksi</span>
           </div>
           {filtered.length > 0 ? (
-            filtered.map((p) => (
-              <div
-                key={p.id}
-                className={`grid grid-cols-[40px_minmax(240px,1.5fr)_140px_110px_80px_120px_90px_140px] items-center gap-3 px-4 py-3 border-b border-[#2A140B]/6 last:border-b-0 transition-colors ${
-                  selection.has(p.id) ? 'bg-[#B87932]/8' : 'hover:bg-[#FAF7F2]'
-                }`}
-              >
-                <input
-                  type="checkbox"
-                  checked={selection.has(p.id)}
-                  onChange={() => toggleOne(p.id)}
-                  aria-label={`Pilih ${p.name}`}
-                  className="w-4 h-4 accent-[#B87932] cursor-pointer"
-                />
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-11 h-11 rounded-lg overflow-hidden bg-[#F3ECE2] flex-shrink-0">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-[#2A140B] truncate">{p.name}</p>
-                  </div>
-                </div>
-                <div>
-                  <span
-                    className={`inline-block px-2 py-1 rounded-full text-[10px] font-semibold ${categoryBadge(p.category)}`}
-                  >
-                    {p.categoryName}
-                  </span>
-                </div>
-                <span className="text-sm font-semibold text-[#2A140B]">{formatRupiah(p.price)}</span>
-                <span className="text-xs text-[#5E3622]/70">{p.unit || '—'}</span>
-                <span className="text-xs text-[#5E3622]/70">{p.weight || '—'}</span>
-                <button
-                  onClick={() => toggleFeatured(p)}
-                  aria-label={`${p.featured ? 'Nonaktifkan' : 'Aktifkan'} unggulan ${p.name}`}
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors cursor-pointer ${
-                    p.featured
-                      ? 'text-[#B87932] bg-[#B87932]/12 hover:bg-[#B87932]/20'
-                      : 'text-[#5E3622]/35 hover:text-[#B87932] bg-[#F3ECE2] hover:bg-[#EFE4D4]'
+            filtered.map((p) => {
+              const meta = [p.unit, p.weight].filter(Boolean).join(' · ');
+              return (
+                <div
+                  key={p.id}
+                  className={`grid grid-cols-[28px_minmax(180px,1.4fr)_112px_92px_64px_104px] items-center gap-2 px-3 min-w-[600px] py-2.5 border-b border-[#2A140B]/6 last:border-b-0 transition-colors ${
+                    selection.has(p.id) ? 'bg-[#B87932]/8' : 'hover:bg-[#FAF7F2]'
                   }`}
                 >
-                  <Star className={`w-4 h-4 ${p.featured ? 'fill-current' : ''}`} />
-                </button>
-                <div className="flex items-center justify-end gap-1.5">
+                  <input
+                    type="checkbox"
+                    checked={selection.has(p.id)}
+                    onChange={() => toggleOne(p.id)}
+                    aria-label={`Pilih ${p.name}`}
+                    className="w-4 h-4 accent-[#B87932] cursor-pointer"
+                  />
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-10 h-10 rounded-lg overflow-hidden bg-[#F3ECE2] flex-shrink-0">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-[#2A140B] truncate">{p.name}</p>
+                      {meta && (
+                        <p className="text-[11px] text-[#5E3622]/70 truncate">{meta}</p>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <span
+                      className={`inline-block px-2 py-1 rounded-full text-[10px] font-semibold ${categoryBadge(p.category)}`}
+                    >
+                      {p.categoryName}
+                    </span>
+                  </div>
+                  <span className="text-sm font-semibold text-[#2A140B]">{formatRupiah(p.price)}</span>
                   <button
-                    onClick={() => openEdit(p)}
-                    aria-label={`Edit ${p.name}`}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center text-[#5E3622] hover:text-[#2A140B] bg-[#F3ECE2] hover:bg-[#EAE2D5] transition-colors cursor-pointer"
+                    onClick={() => toggleFeatured(p)}
+                    aria-label={`${p.featured ? 'Nonaktifkan' : 'Aktifkan'} unggulan ${p.name}`}
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors cursor-pointer ${
+                      p.featured
+                        ? 'text-[#B87932] bg-[#B87932]/12 hover:bg-[#B87932]/20'
+                        : 'text-[#5E3622]/35 hover:text-[#B87932] bg-[#F3ECE2] hover:bg-[#EFE4D4]'
+                    }`}
                   >
-                    <Pencil className="w-3.5 h-3.5" />
+                    <Star className={`w-4 h-4 ${p.featured ? 'fill-current' : ''}`} />
                   </button>
-                  <button
-                    onClick={() => setConfirm({ kind: 'delete-product', product: p })}
-                    aria-label={`Hapus ${p.name}`}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center text-red-600 hover:text-white bg-red-50 hover:bg-red-600 transition-colors cursor-pointer"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                  <div className="flex items-center justify-end gap-1.5">
+                    <button
+                      onClick={() => openEdit(p)}
+                      aria-label={`Edit ${p.name}`}
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-[#5E3622] hover:text-[#2A140B] bg-[#F3ECE2] hover:bg-[#EAE2D5] transition-colors cursor-pointer"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => setConfirm({ kind: 'delete-product', product: p })}
+                      aria-label={`Hapus ${p.name}`}
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-red-600 hover:text-white bg-red-50 hover:bg-red-600 transition-colors cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           ) : (
             <EmptyState
               title="Tidak ada produk ditemukan"
@@ -594,6 +597,7 @@ export const AdminDashboard: React.FC = () => {
             />
           )}
         </div>
+              </div>
             </>
           )}
         </main>
