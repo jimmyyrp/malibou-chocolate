@@ -102,7 +102,10 @@ RLS, akun admin (`users`), dan uji akses REST memakai key publishable.
 
 ## Arsitektur Data (Aplikasi ↔ Supabase)
 
-- Storefront membaca katalog dari `products` lewat key publishable.
+- Storefront membaca katalog dari `products` lewat key publishable; bila
+  env `NEXT_PUBLIC_*` tidak tersedia (mis. hanya ada `SUPABASE_URL` di
+  Vercel), otomatis jatuh ke route publik `/api/catalog` yang memakai
+  service key di sisi server — katalog tetap tampil.
 - Dashboard admin (`/admin`) melakukan semua operasi tulis lewat
   **API route server-side** (`/api/admin/products/*`, `/api/admin/storage`)
   yang memakai secret key di server untuk:
@@ -135,7 +138,10 @@ harus melewati API route.
      set password_hash = crypt('malibou123', gen_salt('bf', 10))
    where username = 'admin';
   ```
-- **Absen di `NEXT_PUBLIC_*`**: beri awalan `NEXT_PUBLIC_` agar nilai
-  tersebut di-inline ke bundle saat `next build`.
+- **Absen di `NEXT_PUBLIC_*`**: nilai berawalan `NEXT_PUBLIC_` di-inline ke
+  bundle saat `next build`. Tanpa `NEXT_PUBLIC_SUPABASE_URL`/
+  `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, storefront otomatis membaca lewat
+  `/api/catalog` (server-side), jadi katalog tetap tampil — pastikan
+  `SUPABASE_SECRET_KEY` tersedia di server.
 - **Menambah kategori baru**: pastikan juga ada di `CATEGORIES`
   (`src/data/products.ts`) agar ikon/deskripsi tampil di storefront.

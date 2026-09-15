@@ -110,10 +110,12 @@ export async function PUT(req: NextRequest) {
   }
 
   try {
-    const { error: upsertErr } = await supabase
-      .from('products')
-      .upsert(rows, { onConflict: 'id' });
-    if (upsertErr) throw upsertErr;
+    if (rows.length > 0) {
+      const { error: upsertErr } = await supabase
+        .from('products')
+        .upsert(rows, { onConflict: 'id' });
+      if (upsertErr) throw upsertErr;
+    }
 
     const keep = new Set(rows.map((r) => r.id));
     const { data, error: selErr } = await supabase.from('products').select('id');

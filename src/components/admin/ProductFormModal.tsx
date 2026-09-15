@@ -124,8 +124,8 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       return;
     }
 
-    if (file.size > 25 * 1024 * 1024) {
-      setUploadError('Ukuran berkas melebihi 25 MB. Pilih gambar yang lebih kecil lalu coba lagi.');
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError('Ukuran berkas melebihi 5 MB. Pilih gambar yang lebih kecil lalu coba lagi.');
       return;
     }
 
@@ -159,7 +159,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
 
   const handleEditorApply = async (
     dataUrl: string,
-    dims: { width: number; height: number }
+    _dims: { width: number; height: number }
   ) => {
     setUploading(true);
     setUploadError(null);
@@ -186,8 +186,11 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
           body: form,
         });
       } catch {
+        // Server tidak terjangkau — simpan gambar hanya di peramban ini.
         setImageUrl(dataUrl);
-        setUploadError(null);
+        setUploadError(
+          'Koneksi ke server gagal — gambar hanya disimpan di peramban ini dan TIDAK akan tampil di toko online.'
+        );
         closeEditor();
         return;
       }

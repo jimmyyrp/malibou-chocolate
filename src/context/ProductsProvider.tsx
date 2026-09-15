@@ -132,55 +132,96 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const catMapsRef = useRef(DEFAULT_CATEGORY_MAPS);
 
-  // Muat katalog dari Supabase pada saat mount. Jika Supabase belum
-  // dikonfigurasi / gagal, aplikasi tetap berjalan memakai katalog bawaan.
+  // Muat katalog pada saat mount. Prioritas: Supabase client (publishable
+  // key) bila tersedia; bila tidak / gagal, jatuh ke /api/catalog agar data
+  // tetap terbaca di lingkungan tanpa env NEXT_PUBLIC_*. Jika semua gagal,
+  // aplikasi tetap berjalan memakai katalog bawaan.
   useEffect(() => {
     let cancelled = false;
-    if (!isSupabaseConfigured() || !supabasePublic) {
-      setLoaded(true);
-      return;
-    }
-    const load = async () => {
-      try {
-        const [cats, prods] = await Promise.all([
-          supabasePublic
-            .from('categories')
-            .select('id, slug, name')
-            .order('sort_order', { ascending: true }),
-          supabasePublic
-            .from('products')
-            .select('*')
-            .order('sort_order', { ascending: true }),
-        ]);
-        if (cancelled) return;
-        if (!cats.error && cats.data) {
-          const slugById: Record<number, string> = {};
-          const idBySlug: Record<string, number> = {};
-          for (const row of cats.data as CategoryRow[]) {
-            const id = Number(row.id);
-            if (Number.isFinite(id) && row.slug) {
-              slugById[id] = row.slug;
-              idBySlug[row.slug] = id;
-            }
-          }
-          catMapsRef.current = { slugById, idBySlug };
+
+    const applyRows = (
+      catRows: CategoryRow[],
+      prodRows: ProductRow[]
+    ): boolean => {
+      if (cancelled) return true;
+      const slugById: Record<number, string> = {};
+      const idBySlug: Record<string, number> = {};
+      for (const row of catRows) {
+        const id = Number(row.id);
+        if (Number.isFinite(id) && row.slug) {
+          slugById[id] = row.slug;
+          idBySlug[row.slug] = id;
         }
-        if (!prods.error && prods.data) {
-          setProducts(
-            prods.data.map((row) =>
-              rowToProduct(row as ProductRow, catMapsRef.current)
-            )
-          );
+      }
+      catMapsRef.current = { slugById, idBySlug };
+      setProducts(prodRows.map((row) => rowToProduct(row, catMapsRef.current)));
+      setLoaded(true);
+      return true;
+    };
+
+    const load = async (silent = false) => {
+      try {
+        // 1) Coba klien Supabase (kredensial publishable di bundle browser).
+        if (supabasePublic) {
+          const [cats, prods] = await Promise.all([
+            supabasePublic
+              .from('categories')
+              .select('id, slug, name')
+              .order('sort_order', { ascending: true }),
+            supabasePublic
+              .from('products')
+              .select('*')
+              .order('sort_order', { ascending: true }),
+          ]);
+          if (cancelled) return;
+          if (!cats.error && !prods.error && cats.data && prods.data) {
+            applyRows(cats.data, prods.data as ProductRow[]);
+            return;
+          }
+        }
+
+        // 2) Fallback: baca katalog lewat route server & service key.
+        const res = await fetch('/api/catalog', { cache: 'no-store' });
+        if (cancelled) return;
+        if (res.ok) {
+          const body = (await res.json().catch(() => null)) as {
+            ok?: boolean;
+            categories?: CategoryRow[];
+            products?: ProductRow[];
+          } | null;
+          if (body?.ok && body.categories && body.products) {
+            applyRows(body.categories, body.products);
+            return;
+          }
         }
         setLoaded(true);
       } catch (err) {
         console.error('Gagal memuat produk dari Supabase:', err);
         if (!cancelled) setLoaded(true);
+        if (!silent) {
+          // abaikan — muatan awal tetap memakai katalog bawaan
+        }
       }
     };
     load();
+
+    // Muat ulang katalog secara senyap saat tab kembali terlihat, sehingga
+    // perubahan yang dibuat admin (produk baru/edit/hapus) langsung tampil
+    // di toko tanpa perlu refresh manual. Frame waktu 30 dtk mencegah muat
+    // ulang berlebihan saat berpindah antar-tab.
+    let lastVisibleAt = Date.now();
+    const onVisibility = () => {
+      if (document.visibilityState !== 'visible') return;
+      const now = Date.now();
+      if (now - lastVisibleAt < 30_000) return;
+      lastVisibleAt = now;
+      void load(true);
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+
     return () => {
       cancelled = true;
+      document.removeEventListener('visibilitychange', onVisibility);
     };
   }, []);
 

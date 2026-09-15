@@ -229,9 +229,10 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
-  if (file.size > 25 * 1024 * 1024) {
+  // Batas 5 MB mengikuti file_size_limit bucket (migrasi 0005).
+  if (file.size > 5 * 1024 * 1024) {
     return NextResponse.json(
-      { error: 'Ukuran berkas melebihi 25 MB.' },
+      { error: 'Ukuran berkas melebihi 5 MB.' },
       { status: 400 }
     );
   }
