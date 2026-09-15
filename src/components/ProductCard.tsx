@@ -31,8 +31,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           src={product.imageUrl}
           alt={product.name}
           loading="lazy"
+          decoding="async"
+          referrerPolicy="no-referrer"
           onError={imageOnError}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-103"
+          className="w-full h-full object-contain p-3 sm:p-4 transition-transform duration-500 group-hover:scale-103"
         />
 
         {/* Weight / Unit indicator */}
@@ -66,21 +68,21 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           {product.description}
         </p>
 
-        {/* Bottom Price & Action row */}
-        <div className="mt-auto pt-2.5 border-t border-[#2A140B]/6 flex items-center justify-between gap-2">
-          <div>
-            <span className="text-[10px] text-[#5E3622]/70 block leading-tight">
+        {/* Bottom Price & Action row: stacked on mobile, single row from sm */}
+        <div className="mt-auto pt-2.5 border-t border-[#2A140B]/6 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-2">
+          <div className="min-w-0 text-left">
+            <span className="text-[10px] text-[#5E3622]/70 block leading-tight truncate">
               Harga{product.unit ? ` / ${product.unit}` : ''}
             </span>
-            <span className="font-sans font-bold text-sm sm:text-base text-[#2A140B]">
+            <span className="font-sans font-bold text-sm sm:text-base text-[#2A140B] block truncate">
               {formatRupiah(product.price)}
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
             <button
               onClick={() => onSelect(product)}
-              className="px-2.5 py-1.5 rounded-lg bg-[#FAF7F2] hover:bg-[#F3ECE2] text-[#2A140B] text-xs font-semibold flex items-center gap-1 border border-[#2A140B]/8 transition-colors"
+              className="flex-1 sm:flex-initial min-h-[36px] sm:min-h-0 sm:px-2.5 sm:py-1.5 rounded-lg bg-[#FAF7F2] hover:bg-[#F3ECE2] text-[#2A140B] text-xs font-semibold flex items-center justify-center gap-1 border border-[#2A140B]/8 transition-colors"
               title="Lihat rincian produk"
             >
               <span>Detail</span>
@@ -92,7 +94,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 onQuickAdd(product);
               }}
               aria-label={`Tambah ${product.name} ke keranjang`}
-              className="w-8 h-8 rounded-lg bg-[#2A140B] hover:bg-[#3A1F14] text-white flex items-center justify-center transition-colors shadow-2xs"
+              className="w-9 h-9 rounded-lg bg-[#2A140B] hover:bg-[#3A1F14] text-white flex items-center justify-center transition-colors shadow-2xs flex-shrink-0"
               title="Tambah cepat ke keranjang pesanan"
             >
               <Plus className="w-3.5 h-3.5" />

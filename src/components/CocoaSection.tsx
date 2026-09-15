@@ -84,7 +84,10 @@ export const CocoaSection: React.FC<CocoaSectionProps> = ({
                     <img
                       src={item.imageUrl}
                       alt={item.name}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-103"
+                      loading="lazy"
+                      decoding="async"
+                      referrerPolicy="no-referrer"
+                      className="w-full h-full object-contain p-3 sm:p-4 transition-transform duration-500 group-hover:scale-103"
                     />
                     <div className="absolute inset-0 bg-[#2A140B]/0 group-hover:bg-[#2A140B]/10 transition-colors flex items-center justify-center">
                       <span className="opacity-0 group-hover:opacity-100 px-2 py-1 rounded-md bg-white/90 text-[#2A140B] text-[10px] font-semibold transition-opacity flex items-center gap-1 shadow-xs">

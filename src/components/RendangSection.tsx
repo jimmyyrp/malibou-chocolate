@@ -110,7 +110,10 @@ export const RendangSection: React.FC<RendangSectionProps> = ({
                   <img
                     src={item.imageUrl}
                     alt={item.name}
-                    className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500"
+                    loading="lazy"
+                    decoding="async"
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-contain p-3 sm:p-4 group-hover:scale-103 transition-transform duration-500"
                   />
                   {item.weight && (
                     <div className="absolute bottom-2 right-2">
@@ -137,22 +140,22 @@ export const RendangSection: React.FC<RendangSectionProps> = ({
                 </p>
               </div>
 
-              <div className="pt-2.5 border-t border-[#2A140B]/6 flex items-center justify-between gap-1">
-                <span className="font-sans font-bold text-sm text-[#2A140B]">
+              <div className="pt-2.5 border-t border-[#2A140B]/6 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <span className="font-sans font-bold text-sm text-[#2A140B] truncate">
                   {formatRupiah(item.price)}
                 </span>
-                
-                <div className="flex items-center gap-1.5">
+
+                <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
                   <button
                     onClick={() => onSelectProduct(item)}
-                    className="px-2.5 py-1.5 rounded-lg bg-[#FAF7F2] hover:bg-[#F3ECE2] text-xs font-semibold text-[#2A140B] border border-[#2A140B]/8 transition-colors"
+                    className="flex-1 sm:flex-initial min-h-[36px] sm:min-h-0 sm:px-2.5 sm:py-1.5 rounded-lg bg-[#FAF7F2] hover:bg-[#F3ECE2] text-xs font-semibold text-[#2A140B] border border-[#2A140B]/8 transition-colors"
                   >
                     Detail
                   </button>
                   <button
                     onClick={() => handleOrderSpecific(item)}
                     aria-label={`Pesan ${item.name} via WhatsApp`}
-                    className="p-1.5 rounded-lg bg-[#2A140B] hover:bg-[#3A1F14] text-white transition-colors"
+                    className="w-9 h-9 rounded-lg bg-[#2A140B] hover:bg-[#3A1F14] text-white transition-colors flex items-center justify-center flex-shrink-0"
                     title="Pesan via WhatsApp"
                   >
                     <MessageCircle className="w-3.5 h-3.5 text-[#25D366]" />

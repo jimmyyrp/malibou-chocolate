@@ -137,8 +137,10 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                 <img
                   src={product.imageUrl}
                   alt={product.name}
+                  decoding="async"
+                  referrerPolicy="no-referrer"
                   onError={imageOnError}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain p-4 sm:p-6"
                 />
                 {product.featured && (
                   <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-[#2A140B]/85 text-[#FAF7F2] text-[10px] font-semibold tracking-wider uppercase">
@@ -229,7 +231,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
 
             <button
               onClick={() => addToCart(product, quantity)}
-              className="flex-1 min-w-[200px] inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#2A140B] hover:bg-[#3A1F14] text-[#FAF7F2] text-xs font-semibold tracking-wider uppercase transition-all shadow-xs active:scale-98"
+              className="w-full sm:flex-1 sm:min-w-[200px] inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#2A140B] hover:bg-[#3A1F14] text-[#FAF7F2] text-xs font-semibold tracking-wider uppercase transition-all shadow-xs active:scale-98"
             >
               <ShoppingBag className="w-4 h-4 text-[#C58B47]" />
               <span>Tambah ke Keranjang</span>

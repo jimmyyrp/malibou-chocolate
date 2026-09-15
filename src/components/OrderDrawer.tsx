@@ -134,7 +134,7 @@ export const OrderDrawer: React.FC<OrderDrawerProps> = ({
                 <img
                   src={item.product.imageUrl}
                   alt={item.product.name}
-                  className="w-14 h-14 rounded-lg object-cover bg-[#F3ECE2] flex-shrink-0"
+                  className="w-14 h-14 rounded-lg object-contain p-1 bg-[#F3ECE2] flex-shrink-0"
                 />
 
                 <div className="flex-1 min-w-0 text-left">
