@@ -27,8 +27,11 @@ import { DualConfirmModal } from './DualConfirmModal';
 import { AdminSidebar, AdminView } from './AdminSidebar';
 import { DashboardOverview } from './DashboardOverview';
 import { ProductActionMenu } from './ProductActionMenu';
+import { BackupPanel } from './BackupPanel';
+import { OrphanImagesPanel } from './OrphanImagesPanel';
 import { resetBodyScroll } from '../../lib/scrollLock';
 import { imageOnError } from '../../lib/imageFallback';
+import { downloadBackup } from '../../lib/catalogBackup';
 
 const CATEGORY_IDS = CATEGORIES.map((c) => c.id) as ProductCategory[];
 
@@ -231,9 +234,23 @@ export const AdminDashboard: React.FC = () => {
       setSelection(new Set());
       if (ok) showToast(`${ids.length} produk berhasil dihapus.`);
     } else if (confirm.kind === 'reset') {
+      // Amankan data sebelum reset: buat cadangan otomatis terlebih dahulu.
+      let backedUp = false;
+      try {
+        downloadBackup(products, adminUser);
+        backedUp = true;
+      } catch {
+        // tetap lanjutkan reset walau cadangan gagal
+      }
       const ok = await resetToDefault();
       setSelection(new Set());
-      if (ok) showToast('Katalog dikembalikan ke data bawaan. Semua perubahan dibersihkan.');
+      if (ok) {
+        showToast(
+          backedUp
+            ? 'Cadangan otomatis telah dibuat. Katalog dikembalikan ke data bawaan.'
+            : 'Katalog dikembalikan ke data bawaan. Semua perubahan dibersihkan.'
+        );
+      }
     } else if (confirm.kind === 'logout') {
       try {
         window.sessionStorage.removeItem(ADMIN_SESSION_KEY);
@@ -296,7 +313,13 @@ export const AdminDashboard: React.FC = () => {
                 <Menu className="w-5 h-5" />
               </button>
               <h1 className="font-serif text-base sm:text-lg font-bold text-[#2A140B] truncate">
-                {view === 'dashboard' ? 'Ringkasan Dashboard' : 'Katalog Produk'}
+                {view === 'dashboard'
+                  ? 'Ringkasan Dashboard'
+                  : view === 'backup'
+                    ? 'Cadangan & Pemulihan'
+                    : view === 'storage'
+                      ? 'Gambar Yatim'
+                      : 'Katalog Produk'}
               </h1>
             </div>
             <div className="flex items-center gap-2">
@@ -324,6 +347,14 @@ export const AdminDashboard: React.FC = () => {
                 openAdd();
               }}
             />
+          ) : view === 'backup' ? (
+            <BackupPanel
+              products={products}
+              adminUser={adminUser}
+              onToast={showToast}
+            />
+          ) : view === 'storage' ? (
+            <OrphanImagesPanel onToast={showToast} />
           ) : (
             <>
               <div className="max-w-[1000px]">

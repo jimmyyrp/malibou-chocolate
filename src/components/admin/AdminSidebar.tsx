@@ -3,7 +3,9 @@
 import React from 'react';
 import Link from 'next/link';
 import {
+  ArchiveRestore,
   ArrowUpRight,
+  ImageOff,
   LayoutDashboard,
   LogOut,
   Package,
@@ -13,7 +15,7 @@ import {
 } from 'lucide-react';
 import { MalibouLogo } from '../MalibouLogo';
 
-export type AdminView = 'dashboard' | 'products';
+export type AdminView = 'dashboard' | 'products' | 'backup' | 'storage';
 
 interface AdminSidebarProps {
   view: AdminView;
@@ -70,6 +72,21 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
           icon={<Package className="w-4 h-4" />}
           label="Produk"
           badge={String(totalProducts)}
+        />
+        <p className="px-3 mt-5 mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#5E3622]/50">
+          Pemeliharaan
+        </p>
+        <SidebarNavItem
+          active={view === 'backup'}
+          onClick={() => handleNavigate('backup')}
+          icon={<ArchiveRestore className="w-4 h-4" />}
+          label="Cadangan & Pemulihan"
+        />
+        <SidebarNavItem
+          active={view === 'storage'}
+          onClick={() => handleNavigate('storage')}
+          icon={<ImageOff className="w-4 h-4" />}
+          label="Gambar Yatim"
         />
       </nav>
 

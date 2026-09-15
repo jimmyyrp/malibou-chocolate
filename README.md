@@ -3,7 +3,7 @@
 Katalog resmi olahan cokelat, bubuk kakao, cocoa butter, dan koleksi spesial
 rendang Malibou — **From Cocoa to Chocolate**.
 
-Stack: **Next.js 16** (static export) · React 19 · Tailwind CSS 4 ·
+Stack: **Next.js 16** (App Router, server app) · React 19 · Tailwind CSS 4 ·
 **Supabase** (PostgreSQL + PostgREST + Realtime).
 
 ---
@@ -32,6 +32,12 @@ Stack: **Next.js 16** (static export) · React 19 · Tailwind CSS 4 ·
 
    Halaman admin: `/admin` — login memakai akun `admin` / `malibou123`
    (diverifikasi ke tabel `public.users`, hash bcrypt).
+
+   Fitur dashboard admin:
+   - **Dashboard** — statistik katalog (jumlah produk, kategori, unggulan, nilai katalog, distribusi harga).
+   - **Produk** — tambah / edit / hapus / tandai unggulan / reset katalog.
+   - **Cadangan & Pemulihan** — unduh katalog sebagai JSON, pulihkan dari berkas atau riwayat lokal, serta cadangan otomatis sebelum reset.
+   - **Gambar Yatim** — deteksi file di bucket `product-images` yang tidak dipakai produk, lalu hapus secara selektif / massal.
 
 ---
 
