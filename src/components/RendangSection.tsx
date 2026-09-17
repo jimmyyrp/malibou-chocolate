@@ -113,7 +113,7 @@ export const RendangSection: React.FC<RendangSectionProps> = ({
                     loading="lazy"
                     decoding="async"
                     referrerPolicy="no-referrer"
-                    className="w-full h-full object-contain p-3 sm:p-4 group-hover:scale-103 transition-transform duration-500"
+                    className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500"
                   />
                   {item.weight && (
                     <div className="absolute bottom-2 right-2">

@@ -140,7 +140,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                   decoding="async"
                   referrerPolicy="no-referrer"
                   onError={imageOnError}
-                  className="w-full h-full object-contain p-4 sm:p-6"
+                  className="w-full h-full object-cover"
                 />
                 {product.featured && (
                   <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-[#2A140B]/85 text-[#FAF7F2] text-[10px] font-semibold tracking-wider uppercase">

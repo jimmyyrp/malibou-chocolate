@@ -34,7 +34,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           decoding="async"
           referrerPolicy="no-referrer"
           onError={imageOnError}
-          className="w-full h-full object-contain p-3 sm:p-4 transition-transform duration-500 group-hover:scale-103"
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-103"
         />
 
         {/* Weight / Unit indicator */}
