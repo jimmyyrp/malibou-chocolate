@@ -1,6 +1,6 @@
 import { Product } from '../types';
 
-export const OFFICIAL_WHATSAPP_NUMBER = '6282283569177';
+export const OFFICIAL_WHATSAPP_NUMBER = '6288271242670';
 export const BRAND_NAME = 'Malibou Chocolate';
 export const BRAND_TAGLINE = 'From Cocoa to Chocolate';
 export const BRAND_SUBTITLE = 'Cita Rasa Kakao dari Ranah Minang';

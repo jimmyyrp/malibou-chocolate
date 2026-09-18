@@ -96,7 +96,7 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount, onOpenCart }) => {
               className="hidden sm:inline-flex items-center gap-1.5 text-[#C58B47] hover:text-[#FAF7F2] font-medium transition-colors ml-4 flex-shrink-0"
             >
               <Phone className="w-3 h-3" />
-              <span>WhatsApp: 0822-8356-9177</span>
+              <span>WhatsApp: 0882-7124-2670</span>
             </a>
           </div>
         </div>

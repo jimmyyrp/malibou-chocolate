@@ -1,15 +1,22 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import { SITE_NAME, SITE_URL } from '@/lib/site';
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: 'Malibou Chocolate',
-    template: '%s — Malibou Chocolate',
+    default: 'Coklat Malibou — Olahan Cokelat Fermentasi Asli Padang Pariaman',
+    template: '%s | Coklat Malibou',
   },
   description:
-    'Modern Cocoa House — Cita Rasa Kakao dari Ranah Minang. Katalog resmi olahan cokelat, bubuk kakao, cocoa butter, dan koleksi spesial rendang Malibou.',
-  applicationName: 'Malibou Chocolate',
+    'Malibou Chocolate: produsen coklat fermentasi asli Padang Pariaman, Sumatera Barat. Jual cokelat batangan, paralin, bubuk coklat 3in1, cocoa powder, biji kakao, cocoa butter, ball choco & rendang khas Minang — Halal MUI, standar SNI, kirim ke seluruh Indonesia.',
+  applicationName: SITE_NAME,
+  alternates: {
+    canonical: '/',
+  },
+  verification: {
+    google: 'o4XklErUVv3htpUgLcPUILnPS9MtvfPHFEtXxbRlQuk',
+  },
   icons: {
     icon: '/icon.png',
     apple: '/apple-icon.png',
@@ -25,20 +32,28 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: 'Malibou Chocolate',
+    title: 'Coklat Malibou — Olahan Cokelat Fermentasi Asli Padang Pariaman',
     description:
-      'Modern Cocoa House — Cita Rasa Kakao dari Ranah Minang. Katalog resmi olahan cokelat, bubuk kakao, cocoa butter, dan koleksi spesial rendang Malibou.',
+      'Malibou Chocolate: produsen coklat fermentasi asli Padang Pariaman, Sumatera Barat. Jual cokelat batangan, paralin, bubuk coklat 3in1, cocoa powder, biji kakao, cocoa butter, ball choco & rendang khas Minang — Halal MUI, standar SNI.',
     type: 'website',
-    siteName: 'Malibou Chocolate',
+    siteName: SITE_NAME,
     locale: 'id_ID',
-    images: [{ url: '/logo.png', width: 1254, height: 1254, alt: 'Logo Malibou Chocolate' }],
+    url: SITE_URL,
+    images: [
+      {
+        url: `${SITE_URL}/logo.png`,
+        width: 1254,
+        height: 1254,
+        alt: 'Logo Malibou Chocolate',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Malibou Chocolate',
+    title: 'Coklat Malibou — Olahan Cokelat Fermentasi Asli Padang Pariaman',
     description:
-      'Modern Cocoa House — Cita Rasa Kakao dari Ranah Minang. Katalog resmi olahan cokelat, bubuk kakao, cocoa butter, dan koleksi spesial rendang Malibou.',
-    images: ['/logo.png'],
+      'Malibou Chocolate: produsen coklat fermentasi asli Padang Pariaman, Sumatera Barat. Jual cokelat batangan, paralin, bubuk coklat 3in1, cocoa powder, biji kakao, cocoa butter & rendang khas Minang.',
+    images: [`${SITE_URL}/logo.png`],
   },
 };
 

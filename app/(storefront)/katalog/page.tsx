@@ -1,60 +1,30 @@
-'use client';
+import type { Metadata } from 'next';
+import KatalogPage from '../../../src/components/KatalogPage';
+import { JsonLd } from '../../../src/components/JsonLd';
+import { itemListSchema } from '../../../src/lib/structuredData';
+import { PRODUCTS } from '../../../src/data/products';
 
-import React, { Suspense, useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { ProductCatalog } from '../../../src/components/ProductCatalog';
-import { useCart } from '../../../src/context/CartProvider';
-import { CATEGORIES } from '../../../src/data/products';
-import { ProductCategory } from '../../../src/types';
+export const metadata: Metadata = {
+  title: 'Katalog Coklat Malibou — 30+ Produk Cokelat, Cocoa & Rendang Padang Pariaman',
+  description:
+    'Katalog lengkap coklat Malibou Padang Pariaman: cokelat batangan, paralin, bubuk coklat 3in1, malicho drink, cocoa powder, biji kakao fermentasi, cocoa butter, ball choco, dan rendang khas Minang. Halal MUI & standar SNI.',
+  alternates: {
+    canonical: '/katalog',
+  },
+  openGraph: {
+    title: 'Katalog Coklat Malibou — Cokelat Fermentasi Padang Pariaman',
+    description:
+      'Jelajahi katalog resmi coklat Malibou: cokelat batangan, paralin, bubuk coklat 3in1, cocoa powder, biji kakao, cocoa butter, ball choco, dan rendang khas Minang.',
+    url: '/katalog',
+    type: 'website',
+  },
+};
 
-function KatalogContent() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const { addToCart } = useCart();
-
-  const rawKategori = searchParams.get('kategori');
-  const kategoriFromUrl: ProductCategory | null = CATEGORIES.some((c) => c.id === rawKategori)
-    ? (rawKategori as ProductCategory)
-    : null;
-
-  const [selectedCategory, setSelectedCategoryState] = useState<
-    ProductCategory | 'all'
-  >(kategoriFromUrl ?? 'all');
-
-  // Sinkronkan pilihan kategori dengan query string URL.
-  useEffect(() => {
-    setSelectedCategoryState(kategoriFromUrl ?? 'all');
-  }, [kategoriFromUrl]);
-
-  const handleCategoryChange = (category: ProductCategory | 'all') => {
-    setSelectedCategoryState(category);
-    router.replace(category === 'all' ? '/katalog' : `/katalog?kategori=${category}`, {
-      scroll: false,
-    });
-  };
-
+export default function KatalogRoute() {
   return (
     <>
-      <ProductCatalog
-        selectedCategory={selectedCategory}
-        onCategoryChange={handleCategoryChange}
-        onSelectProduct={(p) => router.push(`/produk/${p.id}`)}
-        onQuickAdd={(p) => addToCart(p, 1)}
-      />
+      <JsonLd data={itemListSchema(PRODUCTS)} />
+      <KatalogPage />
     </>
-  );
-}
-
-export default function KatalogPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="pt-32 pb-24 text-center text-sm text-[#5E3622]">
-          Memuat katalog…
-        </div>
-      }
-    >
-      <KatalogContent />
-    </Suspense>
   );
 }

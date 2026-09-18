@@ -229,7 +229,7 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
           </div>
           <div className="flex items-center gap-2">
             <Phone className="w-3.5 h-3.5 text-[#B87932] flex-shrink-0" />
-            <span>0822-8356-9177 (Respon Cepat)</span>
+            <span>0882-7124-2670 (Respon Cepat)</span>
           </div>
         </div>
       </div>
