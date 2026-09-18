@@ -24,6 +24,7 @@ import {
 import { LoginScreen } from './LoginScreen';
 import { ProductFormModal } from './ProductFormModal';
 import { DualConfirmModal } from './DualConfirmModal';
+import { ProductImagesPreviewModal } from './ProductImagesPreviewModal';
 import { AdminSidebar, AdminView } from './AdminSidebar';
 import { DashboardOverview } from './DashboardOverview';
 import { ProductActionMenu } from './ProductActionMenu';
@@ -31,6 +32,7 @@ import { BackupPanel } from './BackupPanel';
 import { OrphanImagesPanel } from './OrphanImagesPanel';
 import { resetBodyScroll } from '../../lib/scrollLock';
 import { imageOnError } from '../../lib/imageFallback';
+import { productImages } from '../../lib/productImages';
 import { downloadBackup } from '../../lib/catalogBackup';
 
 const CATEGORY_IDS = CATEGORIES.map((c) => c.id) as ProductCategory[];
@@ -84,6 +86,17 @@ export const AdminDashboard: React.FC = () => {
   const [view, setView] = useState<AdminView>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [actionMenuId, setActionMenuId] = useState<number | null>(null);
+  const [previewProduct, setPreviewProduct] = useState<Product | null>(null);
+
+  const openPreview = (product: Product) => {
+    setActionMenuId(null);
+    setPreviewProduct(product);
+  };
+
+  const editFromPreview = (product: Product) => {
+    setPreviewProduct(null);
+    openEdit(product);
+  };
 
   useEffect(() => {
     resetBodyScroll();
@@ -494,6 +507,7 @@ export const AdminDashboard: React.FC = () => {
           {filtered.length > 0 ? (
             filtered.map((p) => {
               const meta = [p.unit, p.weight].filter(Boolean).join(' · ');
+              const imgCount = productImages(p).length;
               return (
                 <div
                   key={p.id}
@@ -509,10 +523,21 @@ export const AdminDashboard: React.FC = () => {
                     className="w-4 h-4 accent-[#B87932] cursor-pointer"
                   />
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-10 h-10 rounded-lg overflow-hidden bg-[#F3ECE2] flex-shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => openPreview(p)}
+                      title={imgCount > 1 ? `Lihat ${imgCount} foto ${p.name}` : `Lihat foto ${p.name}`}
+                      className="relative w-10 h-10 rounded-lg overflow-hidden bg-[#F3ECE2] flex-shrink-0 cursor-pointer ring-1 ring-inset ring-[#2A140B]/10 hover:ring-[#B87932]/60 transition-shadow group"
+                    >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={p.imageUrl} alt={p.name} onError={imageOnError} className="w-full h-full object-cover" />
-                    </div>
+                      <span className="absolute inset-0 bg-[#170904]/0 group-hover:bg-[#170904]/30 transition-colors" />
+                      {imgCount > 1 && (
+                        <span className="absolute bottom-0 right-0 px-1 rounded-tl-md bg-[#B87932] text-white text-[8px] font-bold leading-tight">
+                          {imgCount}
+                        </span>
+                      )}
+                    </button>
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-[#2A140B] truncate">{p.name}</p>
                       {meta && (
@@ -566,25 +591,38 @@ export const AdminDashboard: React.FC = () => {
         {/* ---------- Mobile Cards ---------- */}
         <div className="lg:hidden space-y-3">
           {filtered.length > 0 ? (
-            filtered.map((p) => (
-              <div
-                key={p.id}
-                className={`bg-white rounded-2xl border p-4 transition-colors ${
-                  selection.has(p.id) ? 'border-[#B87932] ring-1 ring-[#B87932]/40' : 'border-[#2A140B]/10'
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  <input
-                    type="checkbox"
-                    checked={selection.has(p.id)}
-                    onChange={() => toggleOne(p.id)}
-                    aria-label={`Pilih ${p.name}`}
-                    className="mt-1 w-4 h-4 accent-[#B87932] cursor-pointer"
-                  />
-                  <div className="w-14 h-14 rounded-xl overflow-hidden bg-[#F3ECE2] flex-shrink-0">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={p.imageUrl} alt={p.name} onError={imageOnError} className="w-full h-full object-cover" />
-                  </div>
+            filtered.map((p) => {
+              const imgCount = productImages(p).length;
+              return (
+                <div
+                  key={p.id}
+                  className={`bg-white rounded-2xl border p-4 transition-colors ${
+                    selection.has(p.id) ? 'border-[#B87932] ring-1 ring-[#B87932]/40' : 'border-[#2A140B]/10'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      checked={selection.has(p.id)}
+                      onChange={() => toggleOne(p.id)}
+                      aria-label={`Pilih ${p.name}`}
+                      className="mt-1 w-4 h-4 accent-[#B87932] cursor-pointer"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => openPreview(p)}
+                      title={imgCount > 1 ? `Lihat ${imgCount} foto ${p.name}` : `Lihat foto ${p.name}`}
+                      className="relative w-14 h-14 rounded-xl overflow-hidden bg-[#F3ECE2] flex-shrink-0 cursor-pointer ring-1 ring-inset ring-[#2A140B]/10 hover:ring-[#B87932]/60 transition-shadow group"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={p.imageUrl} alt={p.name} onError={imageOnError} className="w-full h-full object-cover" />
+                      <span className="absolute inset-0 bg-[#170904]/0 group-hover:bg-[#170904]/30 transition-colors" />
+                      {imgCount > 1 && (
+                        <span className="absolute bottom-0 right-0 px-1 rounded-tl-md bg-[#B87932] text-white text-[8px] font-bold leading-tight">
+                          {imgCount}
+                        </span>
+                      )}
+                    </button>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
@@ -639,7 +677,8 @@ export const AdminDashboard: React.FC = () => {
                   />
                 </div>
               </div>
-            ))
+              );
+            })
           ) : (
             <EmptyState
               title="Tidak ada produk ditemukan"
@@ -663,6 +702,13 @@ export const AdminDashboard: React.FC = () => {
           setEditingProduct(null);
         }}
         onSave={handleSave}
+      />
+
+      <ProductImagesPreviewModal
+        open={previewProduct !== null}
+        product={previewProduct}
+        onClose={() => setPreviewProduct(null)}
+        onEdit={editFromPreview}
       />
 
       <DualConfirmModal

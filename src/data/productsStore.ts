@@ -12,7 +12,7 @@ type StoredData = { version: number; signature: string; products: Product[] };
  * selalu versi terbaru — bukan produk lama dari localStorage.
  */
 const DATA_SIGNATURE = PRODUCTS.map(
-  (p) => `${p.id}:${p.name}:${p.price}`
+  (p) => `${p.id}:${p.name}:${p.price}:${(p.images ?? []).join('|')}`
 ).join('|');
 
 export function loadProducts(): Product[] {

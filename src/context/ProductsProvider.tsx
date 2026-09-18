@@ -47,6 +47,7 @@ interface ProductRow {
   weight: string | null;
   description: string;
   image_url: string;
+  images: string[] | null;
   featured: boolean | null;
   sort_order: number | null;
 }
@@ -98,6 +99,12 @@ function categorySlugToId(slug: string, maps: CategoryMaps): number | string {
 
 function rowToProduct(row: ProductRow, maps: CategoryMaps): Product {
   const category = categoryIdToSlug(row.category_id, maps);
+  const images =
+    Array.isArray(row.images) && row.images.length > 0
+      ? row.images
+      : row.image_url
+        ? [row.image_url]
+        : [];
   return {
     id: row.id,
     name: row.name,
@@ -107,12 +114,15 @@ function rowToProduct(row: ProductRow, maps: CategoryMaps): Product {
     unit: row.unit ?? undefined,
     weight: row.weight ?? undefined,
     description: row.description,
-    imageUrl: row.image_url,
+    imageUrl: row.image_url || images[0] || '',
+    images,
     featured: row.featured ?? false,
   };
 }
 
 function productToRow(p: Product, maps: CategoryMaps) {
+  const images = Array.isArray(p.images) && p.images.length > 0 ? p.images : [p.imageUrl];
+  const cover = images[0] || p.imageUrl;
   return {
     id: p.id,
     name: p.name,
@@ -121,7 +131,8 @@ function productToRow(p: Product, maps: CategoryMaps) {
     unit: p.unit ?? null,
     weight: p.weight ?? null,
     description: p.description,
-    image_url: p.imageUrl,
+    image_url: cover,
+    images,
     featured: p.featured ?? false,
   };
 }

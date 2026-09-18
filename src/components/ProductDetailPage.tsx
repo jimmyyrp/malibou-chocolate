@@ -18,6 +18,8 @@ import { useProducts } from '../context/ProductsProvider';
 import { useCart } from '../context/CartProvider';
 import { ProductCard } from './ProductCard';
 import { formatRupiah, OFFICIAL_WHATSAPP_NUMBER } from '../data/products';
+import { productImages } from '../lib/productImages';
+import { toSafeImageUrl } from '../lib/supabase';
 import { imageOnError } from '../lib/imageFallback';
 
 interface ProductDetailPageProps {
@@ -48,6 +50,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   const router = useRouter();
 
   const [quantity, setQuantity] = useState(1);
+  const [activeImage, setActiveImage] = useState(0);
 
   const rawParam = String(productParam ?? '').trim();
   const numericId = Number(rawParam);
@@ -68,6 +71,10 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
       router.replace(`/produk/${product.id}`);
     }
   }, [product, numericValid, router]);
+
+  useEffect(() => {
+    setActiveImage(0);
+  }, [product?.id]);
 
   if (!loaded) {
     return (
@@ -102,6 +109,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
     );
   }
 
+  const images = productImages(product);
+  const activeUrl = toSafeImageUrl(images[Math.min(activeImage, images.length - 1)] || product.imageUrl);
+
   const related = products
     .filter((p) => p.category === product.category && p.id !== product.id)
     .slice(0, 4);
@@ -135,8 +145,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
             <div className="rounded-2xl bg-white p-2.5 sm:p-3 border border-[#2A140B]/8 shadow-[0_16px_36px_rgba(42,20,11,0.06)]">
               <div className="relative aspect-square rounded-xl overflow-hidden bg-[#F3ECE2]">
                 <img
-                  src={product.imageUrl}
-                  alt={product.name}
+                  src={activeUrl}
+                  alt={`${images.length > 1 ? `Foto ${Math.min(activeImage, images.length - 1) + 1} ` : ''}${product.name}`}
                   decoding="async"
                   referrerPolicy="no-referrer"
                   onError={imageOnError}
@@ -147,7 +157,46 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                     Unggulan
                   </span>
                 )}
+                {images.length > 1 && (
+                  <span className="absolute bottom-3 right-3 px-2 py-1 rounded-lg bg-[#170904]/60 backdrop-blur-[2px] text-[#FAF7F2] text-[10px] font-semibold">
+                    {Math.min(activeImage, images.length - 1) + 1}/{images.length}
+                  </span>
+                )}
               </div>
+
+              {images.length > 1 && (
+                <div className="mt-2.5 grid grid-cols-3 gap-2">
+                  {images.map((img, i) => (
+                    <button
+                      key={`${product.id}-img-${i}`}
+                      type="button"
+                      onClick={() => setActiveImage(i)}
+                      aria-label={`Tampilkan foto ${i + 1} dari ${images.length}`}
+                      aria-pressed={i === Math.min(activeImage, images.length - 1)}
+                      className={`relative aspect-square rounded-lg overflow-hidden bg-[#F3ECE2] border-2 transition-colors cursor-pointer ${
+                        i === Math.min(activeImage, images.length - 1)
+                          ? 'border-[#B87932]'
+                          : 'border-transparent hover:border-[#B87932]/50'
+                      }`}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={toSafeImageUrl(img)}
+                        alt={`Foto ${i + 1} ${product.name}`}
+                        decoding="async"
+                        referrerPolicy="no-referrer"
+                        onError={imageOnError}
+                        className="w-full h-full object-cover"
+                      />
+                      {i === 0 && (
+                        <span className="absolute top-1 left-1 px-1.5 py-0.5 rounded-md bg-[#B87932]/90 text-white text-[9px] font-semibold">
+                          Utama
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Trust strip */}

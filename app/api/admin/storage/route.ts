@@ -92,21 +92,36 @@ export async function GET() {
   try {
     const [items, products] = await Promise.all([
       listAllObjects(supabase),
-      supabase.from('products').select('image_url'),
+      supabase.from('products').select('image_url, images'),
     ]);
     if (products.error) throw products.error;
 
-    const referenced = new Set<string>();
-    for (const row of (products.data ?? []) as Array<{ image_url: string }>) {
-      const url = row.image_url || '';
-      const marker = `/storage/v1/object/public/${PRODUCT_IMAGES_BUCKET}/`;
-      const idx = url.indexOf(marker);
+    const marker = `/storage/v1/object/public/${PRODUCT_IMAGES_BUCKET}/`;
+
+    const toReferencedPath = (url: string): string | null => {
+      const value = (url || '').trim();
+      if (!value) return null;
+      const idx = value.indexOf(marker);
       if (idx !== -1) {
-        const path = url.slice(idx + marker.length).split('?')[0].replace(/^\/+/, '');
-        if (path) referenced.add(path);
-      } else if (!/^https?:\/\//i.test(url) && url.trim()) {
+        const path = value.slice(idx + marker.length).split('?')[0].replace(/^\/+/, '');
+        return path || null;
+      }
+      if (!/^https?:\/\//i.test(value)) {
         // path polos (mis. "products/xxx.jpg") → dianggap referensi bucket
-        referenced.add(url.trim().replace(/^\/+/, ''));
+        return value.replace(/^\/+/, '');
+      }
+      return null;
+    };
+
+    const referenced = new Set<string>();
+    for (const row of (products.data ?? []) as Array<{
+      image_url: string;
+      images?: string[] | null;
+    }>) {
+      const candidates = [row.image_url, ...(Array.isArray(row.images) ? row.images : [])];
+      for (const value of candidates) {
+        const path = toReferencedPath(value);
+        if (path) referenced.add(path);
       }
     }
 

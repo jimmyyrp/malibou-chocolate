@@ -15,6 +15,7 @@ interface ProductRow {
   weight: string | null;
   description: string;
   image_url: string;
+  images?: string[] | null;
   featured: boolean | null;
   sort_order?: number | null;
 }

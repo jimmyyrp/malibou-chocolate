@@ -16,6 +16,8 @@ export interface Product {
   weight?: string;
   description: string;
   imageUrl: string;
+  /** Galeri gambar produk (maks. 3). Elemen pertama adalah foto utama/cover. */
+  images?: string[];
   featured?: boolean;
 }
 
